@@ -168,6 +168,10 @@ body {
   transition: var(--transition-smooth);
 }
 
+.app-header-floating .btn {
+  flex: none;
+}
+
 /* ==========================================================================
    Timer Card (Positions in Center, Transitions to Top-Left)
    ========================================================================== */
@@ -841,4 +845,268 @@ body {
   color: var(--text-primary);
   margin: 0;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ==========================================================================
+   Spotify Integrated Player Styles
+   ========================================================================== */
+
+.spotify-player-container {
+  width: 100%;
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.spotify-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  margin: 5px 0;
+}
+
+.spotify-playlist-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+}
+
+.spotify-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+/* Custom Dropdown Styling */
+.spotify-custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.spotify-dropdown-trigger {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition-smooth);
+}
+
+.spotify-dropdown-trigger:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.spotify-dropdown-trigger span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  text-align: left;
+}
+
+.spotify-dropdown-trigger .chevron-icon {
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+  opacity: 0.7;
+}
+
+.spotify-custom-dropdown.open .spotify-dropdown-trigger .chevron-icon {
+  transform: rotate(180deg);
+}
+
+.spotify-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(18, 20, 29, 0.95);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.spotify-custom-dropdown.open .spotify-dropdown-menu {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.spotify-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  color: var(--text-primary);
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.spotify-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.spotify-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.spotify-dropdown-item img {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.spotify-playlist-fallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.spotify-dropdown-item span {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+/* Custom Scrollbar for Dropdown Menu */
+.spotify-dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.spotify-dropdown-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.spotify-dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.spotify-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.spotify-now-playing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.spotify-album-art {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.spotify-track-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.spotify-track-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: left;
+}
+
+.spotify-track-artist {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: left;
+}
+
+.spotify-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-spotify-control {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.btn-spotify-control:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-spotify-control.btn-play-pause {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+.btn-spotify-control.btn-play-pause:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.spotify-no-device {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
 }

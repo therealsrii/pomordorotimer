@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MET Museum Pomodoro - Developer Debug Page</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Floating Debug Controls Panel Overlay */
+    .debug-dashboard {
+      position: fixed;
+      top: 30px;
+      left: 30px;
+      width: 320px;
+      max-height: calc(100vh - 60px);
+      background: rgba(8, 9, 13, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      z-index: 100;
+      padding: 1.5rem;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      overflow-y: auto;
+      backdrop-filter: blur(25px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .debug-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.8rem;
+    }
+
+    .debug-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #38bdf8;
+    }
+
+    .debug-close-btn {
+      color: rgba(255, 255, 255, 0.6);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .debug-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .debug-section h4 {
+      margin: 0;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .debug-btn-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+
+    .debug-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+
+    .debug-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .debug-btn.primary {
+      background: #0284c7;
+      border-color: #0369a1;
+    }
+
+    .debug-btn.primary:hover {
+      background: #0ea5e9;
+    }
+
+    .debug-btn.danger {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .debug-btn.danger:hover {
+      background: rgba(239, 68, 68, 0.35);
+    }
+
+    .debug-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .debug-info-item {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .debug-info-item span:first-child {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .debug-info-item span:last-child {
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      word-break: break-all;
+    }
+
+    /* Console viewer inside debug panel */
+    .debug-console {
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0.5rem;
+      font-family: monospace;
+      font-size: 0.7rem;
+      height: 120px;
+      overflow-y: auto;
+      color: #a3e635;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .debug-log-line {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.2rem;
+    }
+
+    .debug-log-line.warn { color: #facc15; }
+    .debug-log-line.error { color: #f87171; }
+
+    /* Override timer snapping positioning in debug view if conflict occurs */
+    .timer-card.active.corner-top-left {
+      top: 30px;
+      left: 360px; /* Offset to clear debug panel */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fullscreen Artwork Background -->
+  <div class="fullscreen-bg-blur" id="fullscreenBgBlur" style="background-image: url('https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg');"></div>
+  <div class="fullscreen-bg-contain" id="fullscreenBgContain" style="background-image: url('https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg');"></div>
+  
+  <!-- Dynamic overlays for the transition effects -->
+  <div class="white-reveal-overlay" id="whiteOverlay"></div>
+  <div class="dark-dim-overlay" id="darkOverlay"></div>
+
+  <!-- App Container -->
+  <div class="app-viewport">
+    
+    <!-- Top-Right Actions Area -->
+    <header class="app-header-floating">
+      <button class="btn btn-icon btn-spotify" id="btnSpotify" title="Link Spotify">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+          <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.377-1.454-5.37-1.782-8.893-.982-.336.075-.668-.135-.744-.47-.077-.337.135-.668.47-.745 3.856-.88 7.15-.502 9.818 1.13.294.18.387.563.206.86zm1.225-2.72c-.227.367-.707.487-1.074.26-2.72-1.672-6.87-2.157-10.08-1.182-.413.125-.847-.11-.972-.522-.125-.413.11-.847.522-.972 3.67-1.114 8.243-.57 11.344 1.34.368.228.488.708.262 1.076zm.106-2.833c-.273.447-.858.59-1.305.318-3.155-1.874-8.365-2.07-11.373-1.157-.502.152-1.03-.135-1.182-.638-.152-.502.135-1.03.638-1.182 3.585-1.088 9.33-.865 12.986 1.306.447.272.592.858.32 1.305z"/>
+        </svg>
+        <span id="spotifyText">Spotify</span>
+      </button>
+
+      <button class="btn btn-icon btn-login" id="btnLogin" title="Sign In with Google">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+          <path fill="currentColor" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.431 0-6.224-2.793-6.224-6.224 0-3.431 2.793-6.224 6.224-6.224 1.566 0 2.99.58 4.095 1.528l3.056-3.056C19.23 2.85 16.5 1.5 13.5 1.5c-5.799 0-10.5 4.701-10.5 10.5s4.701 10.5 10.5 10.5c5.03 0 9.5-3.56 9.5-9.3 0-.6-.05-1.2-.16-1.715H12.24z"/>
+        </svg>
+        <span id="loginText">Sign In</span>
+      </button>
+      
+      <button class="btn btn-icon btn-gallery-toggle" id="btnGalleryToggle" title="View Focus Gallery">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+          <path fill="currentColor" d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12S6.48 2 12 2zm0 18c4.41 0 8-3.59 8-8s-3.59-8-8-8s-8 3.59-8 8s3.59 8 8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+        </svg>
+        <span>History</span>
+      </button>
+    </header>
+
+    <!-- Floating Timer Box -->
+    <div class="timer-card glass-panel" id="timerCard">
+      <div class="timer-mode-badge" id="timerModeBadge">Focus Session</div>
+      
+      <div class="timer-display-container">
+        <svg class="progress-ring" width="220" height="220">
+          <circle class="progress-ring-circle-bg" stroke="rgba(255, 255, 255, 0.05)" stroke-width="6" fill="transparent" r="95" cx="110" cy="110"></circle>
+          <circle class="progress-ring-circle" id="progressRing" stroke="var(--accent-color)" stroke-width="6" stroke-dasharray="596.9" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" r="95" cx="110" cy="110"></circle>
+        </svg>
+        <div class="timer-display" id="timerDisplay">25:00</div>
+      </div>
+
+      <div class="timer-controls">
+        <button class="btn" id="btnReset">Reset</button>
+        <button class="btn btn-primary" id="btnPlayPause">Start Focus</button>
+        <button class="btn" id="btnSkip">Skip</button>
+      </div>
+      
+      <!-- Spotify Integrated Player (Displays when linked) -->
+      <div id="spotifyPlayerContainer" class="spotify-player-container" style="display: none;">
+        <div class="spotify-divider"></div>
+        
+        <!-- Playlist Selector -->
+        <div class="spotify-playlist-wrapper">
+          <label class="spotify-label">Choose Playlist</label>
+          <div class="spotify-custom-dropdown" id="spotifyDropdown">
+            <button class="spotify-dropdown-trigger" id="spotifyDropdownTrigger" type="button">
+              <span id="spotifyDropdownSelectedText">Select Playlist</span>
+              <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+              </svg>
+            </button>
+            <div class="spotify-dropdown-menu" id="spotifyDropdownMenu">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Now Playing Widget -->
+        <div id="spotifyNowPlaying" class="spotify-now-playing" style="display: none;">
+          <img id="spotifyAlbumArt" class="spotify-album-art" src="" alt="Album Art">
+          <div class="spotify-track-details">
+            <div id="spotifyTrackName" class="spotify-track-name">Track Name</div>
+            <div id="spotifyTrackArtist" class="spotify-track-artist">Artist</div>
+          </div>
+          <div class="spotify-player-controls">
+            <button class="btn btn-icon btn-spotify-control" id="spotifyPrevBtn" title="Previous">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6L18 6v12z"/></svg>
+            </button>
+            <button class="btn btn-icon btn-spotify-control btn-play-pause" id="spotifyPlayBtn" title="Play/Pause">
+              <svg id="spotifyPlayIcon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path id="spotifyPlayPath" d="M8 5v14l11-7z"/></svg>
+            </button>
+            <button class="btn btn-icon btn-spotify-control" id="spotifyNextBtn" title="Next">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 18V6l8.5 6zm9-12h2v12h-2z"/></svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- No Active Device Notice -->
+        <div id="spotifyNoDevice" class="spotify-no-device" style="display: none;">
+          <span>No active Spotify device found. Start playing on your device to control.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Break Reflection Card -->
+    <div class="reflection-card glass-panel" id="reflectionCard">
+      <h3>Session Reflection</h3>
+      <p class="subtitle">Take a deep breath. Write down what you feel observing this piece.</p>
+      
+      <textarea class="reflection-input" id="reflectionInput" placeholder="Write your thoughts or interpretation here..."></textarea>
+      
+      <div class="reflection-options">
+        <p>For your next focus session:</p>
+        <div class="reflection-radio-group">
+          <label class="reflection-radio-label">
+            <input type="radio" name="artChoice" value="change" checked>
+            <span>Change Artwork</span>
+          </label>
+          <label class="reflection-radio-label">
+            <input type="radio" name="artChoice" value="keep">
+            <span>Keep Artwork</span>
+          </label>
+        </div>
+      </div>
+      
+      <button class="btn btn-primary btn-block" id="btnSubmitReflection">Save & Continue</button>
+    </div>
+
+    <!-- Floating Bottom-Right Artwork Details Card -->
+    <div class="artwork-details-capsule" id="artworkDetailsCapsule">
+      <div id="artworkPlaceholderMini">Curating Met Gallery...</div>
+      
+      <!-- Content reveals on loaded event -->
+      <div id="artworkDetailsContent" style="display: none;">
+        <div class="artwork-text-info">
+          <h4 id="artTitle">Wheat Field with Cypresses</h4>
+          <p id="artMeta">Vincent van Gogh (1889)</p>
+        </div>
+        
+        <!-- Poetic Commentary Bubble -->
+        <div class="art-context-bubble" id="artContextBubble" style="display: none;">
+          <div class="art-context-header">Curator Commentary</div>
+          <div class="art-context-text" id="artContextText">Loading insights...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FLOATING DEV DEBUG DASHBOARD -->
+  <aside class="debug-dashboard" id="debugDashboard">
+    <div class="debug-header">
+      <h3>🔧 Developer Dashboard</h3>
+      <button class="debug-close-btn" onclick="document.getElementById('debugDashboard').style.display='none'">[hide]</button>
+    </div>
+
+    <!-- Engine Control -->
+    <div class="debug-section">
+      <h4>⏱️ Timer Engine Controls</h4>
+      <div class="debug-btn-grid">
+        <button class="debug-btn primary" onclick="devFastForward()">⏩ Fast-Forward (1s)</button>
+        <button class="debug-btn" onclick="devToggleBreak()">🔄 Toggle State</button>
+      </div>
+    </div>
+
+    <!-- Database Caching & seen list -->
+    <div class="debug-section">
+      <h4>🖼️ Artwork Database (2,100+)</h4>
+      <div class="debug-btn-grid">
+        <button class="debug-btn" onclick="devLoadNextArtwork()">🎨 Next Random</button>
+        <button class="debug-btn danger" onclick="devResetSeenHistory()">🗑️ Reset Seen History</button>
+      </div>
+    </div>
+
+    <!-- System Diagnostics -->
+    <div class="debug-section">
+      <h4>💻 Diagnostics Info</h4>
+      <div class="debug-info-list" id="debugInfoList">
+        <div class="debug-info-item">
+          <span>Firebase Connection</span>
+          <span id="devFirebaseStatus">Checking...</span>
+        </div>
+        <div class="debug-info-item">
+          <span>Auth Status</span>
+          <span id="devAuthStatus">Checking...</span>
+        </div>
+        <div class="debug-info-item">
+          <span>Unique Pool Size</span>
+          <span id="devPoolSize">Checking...</span>
+        </div>
+        <div class="debug-info-item">
+          <span>Paintings Seen</span>
+          <span id="devSeenCount">Checking...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Console Output -->
+    <div class="debug-section">
+      <h4>📋 Live Console Output</h4>
+      <div class="debug-console" id="debugConsole"></div>
+    </div>
+  </aside>
+
+  <!-- Slide-out Focus History Panel -->
+  <aside class="gallery-drawer" id="galleryDrawer">
+    <div class="drawer-header">
+      <h3>Focus Gallery</h3>
+      <button class="btn btn-icon btn-gallery-close" id="btnGalleryClose" title="Close Drawer">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+          <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="drawer-content" id="galleryContent">
+      <div class="empty-state">
+        <p>No completed focus sessions yet.</p>
+        <p class="subtitle">Complete a focus session and write down your reflections to build your gallery.</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Setup Debug Session Flags Before App Loads -->
+  <script>
+    window.IS_DEBUG_PAGE = true;
+    
+    // Live Console hook to display logs inside the developer dashboard
+    const debugConsole = document.getElementById('debugConsole');
+    function logToDashboard(type, args) {
+      const line = document.createElement('div');
+      line.className = `debug-log-line ${type}`;
+      line.textContent = `[${type.toUpperCase()}] ${Array.from(args).map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`;
+      debugConsole.appendChild(line);
+      debugConsole.scrollTop = debugConsole.scrollHeight;
+    }
+    
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    
+    console.log = function() { originalLog.apply(console, arguments); logToDashboard('info', arguments); };
+    console.warn = function() { originalWarn.apply(console, arguments); logToDashboard('warn', arguments); };
+    console.error = function() { originalError.apply(console, arguments); logToDashboard('error', arguments); };
+  </script>
+
+  <!-- Firebase App and Auth/Firestore SDKs (Compat v9) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+
+  <!-- Debug Control Scripts (Communicating with app.js state) -->
+  <script>
+    // Periodically update diagnostic details
+    setInterval(() => {
+      if (typeof state !== 'undefined') {
+        document.getElementById('devFirebaseStatus').textContent = state.firebaseActive ? "Connected ✅" : "Fallback Mode ⚠️";
+        document.getElementById('devAuthStatus').textContent = state.user ? `${state.user.displayName || 'User'} (${state.user.email})` : "Signed Out 👤";
+        document.getElementById('devPoolSize').textContent = state.artPool ? `${state.artPool.length} object IDs` : "0";
+        document.getElementById('devSeenCount').textContent = state.seenArtworkIds ? `${state.seenArtworkIds.length} seen` : "0";
+      }
+    }, 1000);
+
+    function devFastForward() {
+      if (typeof state !== 'undefined' && state.mode !== 'idle') {
+        state.remainingSeconds = 1;
+        console.log("Debug: Timer fast-forwarded to 1s");
+      } else {
+        console.warn("Debug: Start a timer session before fast-forwarding!");
+      }
+    }
+
+    function devToggleBreak() {
+      if (typeof state !== 'undefined') {
+        if (state.mode === 'focus') {
+          handleTimerComplete();
+        } else if (state.mode === 'break') {
+          // Trigger skip to focus
+          handleSkip();
+        } else {
+          // If idle, start focus then trigger
+          startTimer();
+          setTimeout(handleTimerComplete, 100);
+        }
+      }
+    }
+
+    function devLoadNextArtwork() {
+      if (typeof fetchNextArtwork === 'function') {
+        fetchNextArtwork();
+        console.log("Debug: Forced next random artwork fetch");
+      }
+    }
+
+    function devResetSeenHistory() {
+      if (confirm("Clear your artwork seen history? (App will repeat paintings)")) {
+        localStorage.setItem('seenArtworkIds', '[]');
+        if (typeof state !== 'undefined') {
+          state.seenArtworkIds = [];
+          if (state.user && state.db) {
+            state.db.collection('users').doc(state.user.uid).collection('metadata').doc('user_data').set({
+              seenArtworkIds: []
+            }).then(() => console.log("Debug: Cleared Firestore seen history"))
+              .catch(e => console.error(e));
+          }
+        }
+        console.log("Debug: Local seen history cleared");
+      }
+    }
+  </script>
+</body>
+</html>

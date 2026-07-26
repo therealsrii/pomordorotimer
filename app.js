@@ -8,7 +8,7 @@ const BREAK_DURATION_DEFAULT = 5 * 60;  // 5 minutes
 
 // Query param debug option (?debug=true sets timer to 15s focus, 5s break)
 const urlParams = new URLSearchParams(window.location.search);
-const IS_DEBUG = urlParams.get('debug') === 'true';
+const IS_DEBUG = (urlParams.get('debug') === 'true') || (window.IS_DEBUG_PAGE === true);
 
 const FOCUS_DURATION = IS_DEBUG ? 15 : FOCUS_DURATION_DEFAULT;
 const BREAK_DURATION = IS_DEBUG ? 5 : BREAK_DURATION_DEFAULT;
@@ -16,40 +16,40 @@ const BREAK_DURATION = IS_DEBUG ? 5 : BREAK_DURATION_DEFAULT;
 // Curated list of high-quality Met Open Access painting IDs (Fallback dataset)
 const CURATED_ARTWORKS = [
   { id: 436535, title: "Wheat Field with Cypresses", artist: "Vincent van Gogh", date: "1889", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg" },
-  { id: 436529, title: "Self-Portrait with a Straw Hat", artist: "Vincent van Gogh", date: "1887", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP130961.jpg" },
-  { id: 436528, title: "Irises", artist: "Vincent van Gogh", date: "1890", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-20082-001.jpg" },
-  { id: 437133, title: "Water Lilies", artist: "Claude Monet", date: "1919", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15003-001.jpg" },
-  { id: 437127, title: "Bridge over a Pond of Water Lilies", artist: "Claude Monet", date: "1899", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15001-001.jpg" },
-  { id: 437131, title: "The Parc Monceau", artist: "Claude Monet", date: "1878", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP318843.jpg" },
-  { id: 437397, title: "Aristotle with a Bust of Homer", artist: "Rembrandt van Rijn", date: "1653", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-24151-001.jpg" },
-  { id: 437396, title: "Self-Portrait", artist: "Rembrandt van Rijn", date: "1660", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14350-001.jpg" },
-  { id: 437879, title: "Study of a Young Woman", artist: "Johannes Vermeer", date: "ca. 1665–67", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-1454-001.jpg" },
-  { id: 437877, title: "Allegory of the Catholic Faith", artist: "Johannes Vermeer", date: "ca. 1670–72", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-1451-001.jpg" },
-  { id: 437430, title: "By the Seashore", artist: "Auguste Renoir", date: "1883", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14815-001.jpg" },
-  { id: 437434, title: "Madame Georges Charpentier and Her Children", artist: "Auguste Renoir", date: "1878", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14822-001.jpg" },
-  { id: 436253, title: "View of Toledo", artist: "El Greco", date: "ca. 1599–1600", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-13139-001.jpg" },
-  { id: 437658, title: "Circus Sideshow (Parade de cirque)", artist: "Georges Seurat", date: "1887–88", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-17117-001.jpg" },
-  { id: 436819, title: "Mada Primavesi", artist: "Gustav Klimt", date: "1912", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-12501-001.jpg" },
-  { id: 45434,  title: "Under the Wave off Kanagawa (The Great Wave)", artist: "Katsushika Hokusai", date: "ca. 1830–32", imageUrl: "https://images.metmuseum.org/CRDImages/as/original/DP130155.jpg" },
-  { id: 435882, title: "The Card Players", artist: "Paul Cézanne", date: "1890–92", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP312322.jpg" },
-  { id: 435883, title: "Still Life with Apples and a Pot of Primroses", artist: "Paul Cézanne", date: "ca. 1890", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP312323.jpg" },
-  { id: 438015, title: "Madame X (Madame Pierre Gautreau)", artist: "John Singer Sargent", date: "1883–84", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14286-001.jpg" },
-  { id: 438023, title: "The Wyndham Sisters", artist: "John Singer Sargent", date: "1899", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14289-001.jpg" },
-  { id: 436139, title: "The Dance Class", artist: "Edgar Degas", date: "1874", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP312000.jpg" },
-  { id: 436151, title: "Woman in a Tub", artist: "Edgar Degas", date: "1886", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14979-001.jpg" },
-  { id: 437508, title: "The Repast of the Lion", artist: "Henri Rousseau", date: "ca. 1907", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15822-001.jpg" },
-  { id: 437310, title: "The Boulevard Montmartre on a Winter Morning", artist: "Camille Pissarro", date: "1897", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14571-001.jpg" },
-  { id: 435848, title: "The Cup of Tea", artist: "Mary Cassatt", date: "1879", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15332-001.jpg" },
-  { id: 436947, title: "Boating", artist: "Édouard Manet", date: "1874", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-16982-001.jpg" },
-  { id: 437654, title: "The Channel at Gravelines, Evening", artist: "Georges Seurat", date: "1890", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-17120-001.jpg" },
-  { id: 436252, title: "The Opening of the Fifth Seal", artist: "El Greco", date: "1608–14", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-13137-001.jpg" },
-  { id: 335805, title: "Studies for the Libyan Sibyl", artist: "Michelangelo Buonarroti", date: "ca. 1510–11", imageUrl: "https://images.metmuseum.org/CRDImages/dp/original/DP375081.jpg" },
-  { id: 341857, title: "Head of a Muse", artist: "Raphael (Raffaello Sanzio)", date: "ca. 1508", imageUrl: "https://images.metmuseum.org/CRDImages/dp/original/DP810777.jpg" },
-  { id: 435826, title: "The Musicians", artist: "Caravaggio (Michelangelo Merisi)", date: "1595", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-13350-001.jpg" },
-  { id: 435728, title: "Madonna Adoring the Child with Two Angels", artist: "Sandro Botticelli", date: "ca. 1490", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15814-001.jpg" },
-  { id: 436838, title: "The Fortune Teller", artist: "Georges de La Tour", date: "ca. 1630", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-19600-001.jpg" },
-  { id: 437869, title: "Juan de Pareja", artist: "Diego Velázquez", date: "1650", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-20516-001.jpg" },
-  { id: 10497,  title: "The Oxbow", artist: "Thomas Cole", date: "1836", imageUrl: "https://images.metmuseum.org/CRDImages/lh/original/DP-23214-001.jpg" }
+  { id: 436529, title: "L'Arl\u00e9sienne: Madame Joseph-Michel Ginoux (Marie Julien, 1848\u20131911)", artist: "Vincent van Gogh", date: "1888\u201389", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT1396.jpg" },
+  { id: 436528, title: "Irises", artist: "Vincent van Gogh", date: "1890", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP346474.jpg" },
+  { id: 437133, title: "Garden at Sainte-Adresse", artist: "Claude Monet", date: "1867", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg" },
+  { id: 437127, title: "Bridge over a Pond of Water Lilies", artist: "Claude Monet", date: "1899", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg" },
+  { id: 437131, title: "The Bodmer Oak, Fontainebleau Forest", artist: "Claude Monet", date: "1865", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg" },
+  { id: 437397, title: "Self-Portrait", artist: "Rembrandt (Rembrandt van Rijn)", date: "1660", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-16323-001.jpg" },
+  { id: 437396, title: "Hendrickje Stoffels (1626\u20131663)", artist: "Rembrandt (Rembrandt van Rijn)", date: "mid-1650s", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP145920.jpg" },
+  { id: 437879, title: "Study of a Young Woman", artist: "Johannes Vermeer", date: "ca. 1665\u201367", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP353256.jpg" },
+  { id: 437877, title: "Allegory of the Catholic Faith", artist: "Johannes Vermeer", date: "ca. 1670\u201372", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP145924.jpg" },
+  { id: 437430, title: "By the Seashore", artist: "Auguste Renoir", date: "1883", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14936-039.jpg" },
+  { id: 437434, title: "In the Meadow", artist: "Auguste Renoir", date: "1888\u201392", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT1398.jpg" },
+  { id: 436253, title: "Lucas van Uffel (died 1637)", artist: "Anthony van Dyck", date: "ca. 1622", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-27908-001.jpg" },
+  { id: 437658, title: "Study for \"A Sunday on La Grande Jatte\"", artist: "Georges Seurat", date: "1884", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP259921.jpg" },
+  { id: 436819, title: "M\u00e4da Primavesi (1903\u20132000)", artist: "Gustav Klimt", date: "1912\u201313", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP243354.jpg" },
+  { id: 45434, title: "Under the Wave off Kanagawa (Kanagawa oki nami ura), also known as The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanj\u016brokkei)", artist: "Katsushika Hokusai", date: "ca. 1830\u201332", imageUrl: "https://images.metmuseum.org/CRDImages/as/original/DP130155.jpg" },
+  { id: 435868, title: "The Card Players", artist: "Paul C\u00e9zanne", date: "1890\u201392", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP231550.jpg" },
+  { id: 435882, title: "Still Life with Apples and a Pot of Primroses", artist: "Paul C\u00e9zanne", date: "ca. 1890", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT47.jpg" },
+  { id: 438015, title: "Gray Weather, Grande Jatte", artist: "Georges Seurat", date: "ca. 1886\u201388", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT1945.jpg" },
+  { id: 438023, title: "The Antechamber of the Sala del Maggior Consiglio", artist: "Francesco Guardi", date: "ca. 1765\u201368", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT4167.jpg" },
+  { id: 436139, title: "Dancers Practicing at the Barre", artist: "Edgar Degas", date: "1877", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT840.jpg" },
+  { id: 436151, title: "The Milliner", artist: "Edgar Degas", date: "ca. 1882", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP289328.jpg" },
+  { id: 437508, title: "Self-Portrait", artist: "Salvator Rosa", date: "ca. 1647", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP323414.jpg" },
+  { id: 437310, title: "The Boulevard Montmartre on a Winter Morning", artist: "Camille Pissarro", date: "1897", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-21959-001.jpg" },
+  { id: 435848, title: "The Birth of the Virgin", artist: "Fra Carnevale (Bartolomeo di Giovanni Corradini)", date: "1467", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP109484.jpg" },
+  { id: 436947, title: "Boating", artist: "Edouard Manet", date: "1874", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-25466-001.jpg" },
+  { id: 437654, title: "Circus Sideshow (Parade de cirque)", artist: "Georges Seurat", date: "1887\u201388", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP375450_cropped.jpg" },
+  { id: 436252, title: "James Stuart (1612\u20131655), Duke of Richmond and Lennox", artist: "Anthony van Dyck", date: "ca. 1633\u201335", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-25646-001.jpg" },
+  { id: 335805, title: "Design for a frame with Eagles and Trophies", artist: "Johann Oktavian Salver", date: "1750\u201388", imageUrl: "https://images.metmuseum.org/CRDImages/dp/original/DP804385.jpg" },
+  { id: 341857, title: "Saint John the Baptist before Herod and Herodias", artist: "Morazzone (Pier Francesco Mazzucchelli)", date: "16th century", imageUrl: "https://images.metmuseum.org/CRDImages/dp/original/DP330306.jpg" },
+  { id: 435826, title: "The Love Song", artist: "Sir Edward Burne-Jones", date: "1868\u201377", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP323394.jpg" },
+  { id: 435728, title: "The Last Communion of Saint Jerome", artist: "Botticelli (Alessandro di Mariano Filipepi)", date: "early 1490s", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-24049-001.jpg" },
+  { id: 436838, title: "The Fortune-Teller", artist: "Georges de La Tour", date: "probably 1630s", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14286-015.jpg" },
+  { id: 437869, title: "Juan de Pareja (ca. 1608\u20131670)", artist: "Vel\u00e1zquez (Diego Rodr\u00edguez de Silva y Vel\u00e1zquez)", date: "1650", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14286-001.jpg" },
+  { id: 10497, title: "View from Mount Holyoke, Northampton, Massachusetts, after a Thunderstorm\u2014The Oxbow", artist: "Thomas Cole", date: "1836", imageUrl: "https://images.metmuseum.org/CRDImages/ad/original/DP-12550-001.jpg" }
 ];
 
 // App State
@@ -62,7 +62,13 @@ let state = {
   pendingArt: null, // Preloaded next art details
   artChoiceNextSession: 'change', // 'change' or 'keep'
   snappedCorner: 'corner-top-left', // Snapped corner position
-  snappedReflectionCorner: 'corner-center-bottom' // Snapped reflection corner position
+  snappedReflectionCorner: 'corner-center-bottom', // Snapped reflection corner position
+  seenArtworkIds: [], // Track already seen painting IDs to prevent repetition
+  artPool: [], // Pool of all Met painting object IDs
+  user: null, // Firebase authenticated user
+  firebaseActive: false, // Flag indicating if Firebase initialized successfully
+  db: null, // Firestore database instance
+  spotifyToken: null // Spotify Access Token for controlling playback
 };
 
 // DOM Elements
@@ -91,6 +97,26 @@ const artTitle = document.getElementById('artTitle');
 const artMeta = document.getElementById('artMeta');
 
 const appHeaderFloating = document.querySelector('.app-header-floating');
+const btnLogin = document.getElementById('btnLogin');
+let loginText = document.getElementById('loginText');
+
+const btnSpotify = document.getElementById('btnSpotify');
+const spotifyText = document.getElementById('spotifyText');
+
+const spotifyPlayerContainer = document.getElementById('spotifyPlayerContainer');
+const spotifyDropdown = document.getElementById('spotifyDropdown');
+const spotifyDropdownTrigger = document.getElementById('spotifyDropdownTrigger');
+const spotifyDropdownSelectedText = document.getElementById('spotifyDropdownSelectedText');
+const spotifyDropdownMenu = document.getElementById('spotifyDropdownMenu');
+const spotifyNowPlaying = document.getElementById('spotifyNowPlaying');
+const spotifyAlbumArt = document.getElementById('spotifyAlbumArt');
+const spotifyTrackName = document.getElementById('spotifyTrackName');
+const spotifyTrackArtist = document.getElementById('spotifyTrackArtist');
+const spotifyPrevBtn = document.getElementById('spotifyPrevBtn');
+const spotifyPlayBtn = document.getElementById('spotifyPlayBtn');
+const spotifyNextBtn = document.getElementById('spotifyNextBtn');
+const spotifyNoDevice = document.getElementById('spotifyNoDevice');
+const spotifyPlayPath = document.getElementById('spotifyPlayPath');
 
 const galleryDrawer = document.getElementById('galleryDrawer');
 const btnGalleryToggle = document.getElementById('btnGalleryToggle');
@@ -100,12 +126,26 @@ const galleryContent = document.getElementById('galleryContent');
 /* ==========================================================================
    Initialisation
    ========================================================================== */
-function init() {
+async function init() {
+  // Auto-redirect localhost to 127.0.0.1 to maintain single origin state (LocalStorage/Firebase/Spotify)
+  if (window.location.hostname === 'localhost') {
+    window.location.href = window.location.href.replace('localhost', '127.0.0.1');
+    return;
+  }
+
   setupEventListeners();
   setupDragAndDrop();
   updateTimerDisplay();
   setProgress(100);
-  loadGallery();
+  
+  // Set default local seen list
+  state.seenArtworkIds = JSON.parse(localStorage.getItem('seenArtworkIds') || '[]');
+  
+  // Initialise Firebase Auth & DB (falls back gracefully to LocalStorage mode)
+  setupFirebase();
+  
+  // Initialise Spotify Auth & state checks
+  await checkSpotifyHashToken();
   
   // Select a random masterpiece locally for instant welcome load on reload!
   const randomItem = CURATED_ARTWORKS[Math.floor(Math.random() * CURATED_ARTWORKS.length)];
@@ -113,6 +153,9 @@ function init() {
   
   // Display it immediately without blocking on network queries
   displayArtwork(state.currentArt);
+  
+  // Load the Met paintings ID pool in the background
+  state.artPool = await loadArtPool();
 }
 
 function setupEventListeners() {
@@ -120,9 +163,24 @@ function setupEventListeners() {
   btnReset.addEventListener('click', resetTimer);
   btnSkip.addEventListener('click', handleSkip);
   btnSubmitReflection.addEventListener('click', submitReflection);
+  btnLogin.addEventListener('click', handleAuthAction);
+  btnSpotify.addEventListener('click', handleSpotifyAuth);
   
   btnGalleryToggle.addEventListener('click', toggleGallery);
   btnGalleryClose.addEventListener('click', toggleGallery);
+  
+  if (spotifyDropdownTrigger) {
+    spotifyDropdownTrigger.addEventListener('click', toggleSpotifyDropdown);
+    spotifyPrevBtn.addEventListener('click', handleSpotifyPrev);
+    spotifyPlayBtn.addEventListener('click', handleSpotifyPlayPause);
+    spotifyNextBtn.addEventListener('click', handleSpotifyNext);
+    
+    document.addEventListener('click', (e) => {
+      if (spotifyDropdown && !spotifyDropdown.contains(e.target)) {
+        spotifyDropdown.classList.remove('open');
+      }
+    });
+  }
 }
 
 /* ==========================================================================
@@ -132,12 +190,11 @@ function setupEventListeners() {
 async function fetchNextArtwork() {
   showArtLoading();
   try {
-    const randomItem = CURATED_ARTWORKS[Math.floor(Math.random() * CURATED_ARTWORKS.length)];
-    const artObj = await fetchArtworkDetails(randomItem.id);
-    if (artObj && artObj.imageUrl) {
+    const artObj = await getNextUnseenArtwork();
+    if (artObj) {
       displayArtwork(artObj);
     } else {
-      throw new Error("Curated fetch returned empty");
+      throw new Error("Could not find any unseen artwork details");
     }
   } catch (error) {
     console.warn("Met API error. Loading curated fallback.", error);
@@ -174,23 +231,701 @@ async function fetchArtworkDetails(objectId) {
 }
 
 async function loadCuratedFallback() {
-  const item = CURATED_ARTWORKS[Math.floor(Math.random() * CURATED_ARTWORKS.length)];
-  const artObj = await fetchArtworkDetails(item.id);
-  if (artObj) {
-    displayArtwork(artObj);
-  } else {
-    displayArtwork({
-      title: item.title,
-      artist: item.artist,
-      date: item.date,
-      medium: "Oil on canvas",
-      imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg",
-      culture: "European",
-      dimensions: "Not specified",
-      department: "European Paintings",
-      creditLine: "Curated Met Collection Fallback",
-      objectURL: `https://www.metmuseum.org/art/collection/search/${item.id}`
+  // Select a random unseen item from local curated list if possible
+  let unseenCurated = CURATED_ARTWORKS.filter(a => !state.seenArtworkIds.includes(a.id));
+  if (unseenCurated.length === 0) {
+    unseenCurated = CURATED_ARTWORKS;
+  }
+  const item = unseenCurated[Math.floor(Math.random() * unseenCurated.length)];
+  displayArtwork(item);
+}
+
+async function loadArtPool() {
+  let pool = localStorage.getItem('art_pool');
+  if (pool) {
+    return JSON.parse(pool);
+  }
+  
+  try {
+    // Pull the 2,179 European oil painting IDs
+    const response = await fetch("https://collectionapi.metmuseum.org/public/collection/v1/search?departmentId=11&q=oil");
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.objectIDs && data.objectIDs.length > 0) {
+        localStorage.setItem('art_pool', JSON.stringify(data.objectIDs));
+        return data.objectIDs;
+      }
+    }
+  } catch (e) {
+    console.error("Failed to load Met search IDs:", e);
+  }
+  
+  // Fallback to our curated 35 IDs if offline
+  return CURATED_ARTWORKS.map(a => a.id);
+}
+
+async function getNextUnseenArtwork() {
+  const pool = state.artPool.length > 0 ? state.artPool : CURATED_ARTWORKS.map(a => a.id);
+  let unseenIds = pool.filter(id => !state.seenArtworkIds.includes(id));
+  
+  // Reset history if they have seen everything
+  if (unseenIds.length === 0) {
+    state.seenArtworkIds = [];
+    localStorage.setItem('seenArtworkIds', '[]');
+    if (state.user && state.db) {
+      state.db.collection('users').doc(state.user.uid).collection('metadata').doc('user_data').set({
+        seenArtworkIds: []
+      }).catch(e => console.error(e));
+    }
+    unseenIds = [...pool];
+  }
+  
+  // Try up to 10 random unseen IDs to find a valid public domain painting with an image
+  for (let attempt = 0; attempt < 10; attempt++) {
+    if (unseenIds.length === 0) break;
+    
+    const randomIndex = Math.floor(Math.random() * unseenIds.length);
+    const selectedId = unseenIds[randomIndex];
+    
+    unseenIds.splice(randomIndex, 1);
+    
+    const details = await fetchArtworkDetails(selectedId);
+    if (details && details.imageUrl) {
+      return details;
+    } else {
+      // Mark as seen so we don't attempt this invalid ID again
+      state.seenArtworkIds.push(selectedId);
+      localStorage.setItem('seenArtworkIds', JSON.stringify(state.seenArtworkIds));
+      if (state.user && state.db) {
+        state.db.collection('users').doc(state.user.uid).collection('metadata').doc('user_data').set({
+          seenArtworkIds: state.seenArtworkIds
+        }).catch(e => console.error(e));
+      }
+    }
+  }
+  
+  // Return a random local curated item as fallback
+  return CURATED_ARTWORKS[Math.floor(Math.random() * CURATED_ARTWORKS.length)];
+}
+
+/* ==========================================================================
+   Firebase Sync & Authentication
+   ========================================================================== */
+
+function setupFirebase() {
+  const isValidConfig = typeof firebaseConfig !== 'undefined' && 
+                        firebaseConfig.apiKey && 
+                        !firebaseConfig.apiKey.includes('PLACEHOLDER') && 
+                        !firebaseConfig.apiKey.includes('YOUR_API_KEY');
+                        
+  if (!isValidConfig) {
+    console.log("Firebase is not configured. Falling back to LocalStorage Mode.");
+    btnLogin.title = "Configure Firebase in config.js to sync cloud history";
+    btnLogin.style.opacity = 0.5;
+    state.firebaseActive = false;
+    return;
+  }
+  
+  try {
+    firebase.initializeApp(firebaseConfig);
+    state.db = firebase.firestore();
+    state.firebaseActive = true;
+    
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        state.user = user;
+        loginText.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Signed In';
+        if (user.photoURL) {
+          btnLogin.innerHTML = `<img src="${user.photoURL}" referrerpolicy="no-referrer" alt="${user.displayName}" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;"><span>${loginText.textContent}</span>`;
+        }
+        btnLogin.title = `Signed in as ${user.email}. Click to Sign Out.`;
+        
+        await syncUserDataOnLogin(user.uid);
+      } else {
+        state.user = null;
+        btnLogin.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.431 0-6.224-2.793-6.224-6.224 0-3.431 2.793-6.224 6.224-6.224 1.566 0 2.99.58 4.095 1.528l3.056-3.056C19.23 2.85 16.5 1.5 13.5 1.5c-5.799 0-10.5 4.701-10.5 10.5s4.701 10.5 10.5 10.5c5.03 0 9.5-3.56 9.5-9.3 0-.6-.05-1.2-.16-1.715H12.24z"/>
+          </svg>
+          <span id="loginText">Sign In</span>
+        `;
+        loginText = document.getElementById('loginText');
+        btnLogin.title = "Sign In with Google";
+        
+        state.seenArtworkIds = JSON.parse(localStorage.getItem('seenArtworkIds') || '[]');
+        loadGallery();
+      }
     });
+  } catch (err) {
+    console.error("Firebase initialization failed:", err);
+    state.firebaseActive = false;
+  }
+}
+
+async function syncUserDataOnLogin(uid) {
+  try {
+    const metaDoc = await state.db.collection('users').doc(uid).collection('metadata').doc('user_data').get();
+    let cloudSeen = [];
+    if (metaDoc.exists) {
+      cloudSeen = metaDoc.data().seenArtworkIds || [];
+    }
+    
+    const localSeen = JSON.parse(localStorage.getItem('seenArtworkIds') || '[]');
+    const mergedSeen = Array.from(new Set([...cloudSeen, ...localSeen]));
+    state.seenArtworkIds = mergedSeen;
+    
+    await state.db.collection('users').doc(uid).collection('metadata').doc('user_data').set({
+      seenArtworkIds: mergedSeen
+    });
+    localStorage.setItem('seenArtworkIds', JSON.stringify(mergedSeen));
+    
+    const reflectionsSnap = await state.db.collection('users').doc(uid).collection('reflections').orderBy('timestamp', 'desc').get();
+    let cloudReflections = [];
+    reflectionsSnap.forEach(doc => {
+      cloudReflections.push(doc.data());
+    });
+    
+    const localReflections = JSON.parse(localStorage.getItem('met_timer_history') || '[]');
+    if (localReflections.length > 0) {
+      for (const localRef of localReflections) {
+        const alreadyInCloud = cloudReflections.some(cr => cr.imageUrl === localRef.imageUrl && cr.timestamp === localRef.timestamp);
+        if (!alreadyInCloud) {
+          await state.db.collection('users').doc(uid).collection('reflections').add(localRef);
+          cloudReflections.push(localRef);
+        }
+      }
+      cloudReflections.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      localStorage.setItem('met_timer_history', '[]');
+    }
+    
+    localStorage.setItem('cloud_reflections_cache', JSON.stringify(cloudReflections));
+    
+    // Sync Spotify Tokens from cloud to local or vice-versa
+    const spotifyDoc = await state.db.collection('users').doc(uid).collection('metadata').doc('spotify_tokens').get();
+    if (spotifyDoc.exists) {
+      const spData = spotifyDoc.data();
+      localStorage.setItem('spotify_token', spData.access_token || "");
+      localStorage.setItem('spotify_refresh_token', spData.refresh_token || "");
+      localStorage.setItem('spotify_expires', spData.expires || "0");
+      await checkSpotifyHashToken();
+    } else {
+      const localToken = localStorage.getItem('spotify_token');
+      const localRefresh = localStorage.getItem('spotify_refresh_token');
+      const localExpires = localStorage.getItem('spotify_expires');
+      if (localToken && localExpires) {
+        await state.db.collection('users').doc(uid).collection('metadata').doc('spotify_tokens').set({
+          access_token: localToken,
+          refresh_token: localRefresh || "",
+          expires: localExpires
+        }).catch(e => console.error("Error saving local spotify to cloud:", e));
+      }
+    }
+    
+    loadGallery();
+  } catch (err) {
+    console.error("Error syncing user data on login:", err);
+  }
+}
+
+function handleAuthAction() {
+  if (!state.firebaseActive) {
+    alert("Firebase is not configured. Please paste your credentials into config.js to enable cloud database sync!");
+    return;
+  }
+  
+  if (state.user) {
+    firebase.auth().signOut().catch(err => console.error("Sign out error:", err));
+  } else {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).catch(error => {
+      console.error("Sign in failed:", error);
+      if (error.code === 'auth/popup-blocked') {
+        alert("Popup blocked! Please enable popups for this site in your browser to sign in with Google.");
+      } else {
+        alert("Sign in failed. This can happen if third-party cookies or cross-site tracking are blocked in your browser settings (common in Brave or Safari's private tabs). Please try a standard Chrome window or enable cookies for this site.");
+      }
+    });
+  }
+}
+
+/* ==========================================================================
+   Spotify Remote Control Integration (OAuth PKCE Flow)
+   ========================================================================== */
+
+function generateRandomString(length) {
+  let text = '';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < length; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
+async function generateCodeChallenge(codeVerifier) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(codeVerifier);
+  const digest = await window.crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode.apply(null, new Uint8Array(digest)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
+async function saveSpotifyTokensToCloud(accessToken, refreshToken, expiresAt) {
+  if (state.user && state.db) {
+    await state.db.collection('users').doc(state.user.uid).collection('metadata').doc('spotify_tokens').set({
+      access_token: accessToken,
+      refresh_token: refreshToken || "",
+      expires: expiresAt.toString()
+    }).catch(e => console.error("Error saving spotify tokens to cloud:", e));
+  }
+}
+
+async function checkSpotifyHashToken() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  
+  if (code) {
+    // We received an auth code! Exchange it for an access token.
+    const codeVerifier = localStorage.getItem('spotify_code_verifier');
+    if (!codeVerifier) {
+      console.warn("Spotify: Missing code_verifier in LocalStorage. Origin mismatch between auth request and callback.");
+      alert("Spotify linking failed due to domain mismatch (localhost vs 127.0.0.1). Always use http://127.0.0.1:8456/ in your browser address bar.");
+      return;
+    }
+    
+    let redirectUri = window.location.origin + window.location.pathname;
+    redirectUri = redirectUri.replace('localhost', '127.0.0.1');
+    
+    // Clear URL query parameters immediately
+    window.history.replaceState("", document.title, window.location.pathname);
+    
+    try {
+      const response = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          code: code,
+          redirect_uri: redirectUri,
+          client_id: spotifyConfig.clientId,
+          code_verifier: codeVerifier
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const expireTime = Date.now() + data.expires_in * 1000;
+        localStorage.setItem('spotify_token', data.access_token);
+        localStorage.setItem('spotify_refresh_token', data.refresh_token);
+        localStorage.setItem('spotify_expires', expireTime.toString());
+        console.log("Spotify: Authentication successful.");
+        await saveSpotifyTokensToCloud(data.access_token, data.refresh_token, expireTime);
+        alert("Spotify Linked Successfully!");
+      } else {
+        const err = await response.json();
+        console.error("Spotify token exchange failed:", err);
+        alert("Spotify Link Failed: " + (err.error_description || err.error || JSON.stringify(err)));
+      }
+    } catch (e) {
+      console.error("Error exchanging Spotify code:", e);
+    }
+  }
+  
+  // Load token from storage and check expiration
+  let token = localStorage.getItem('spotify_token');
+  let expires = Number(localStorage.getItem('spotify_expires') || '0');
+  const refreshToken = localStorage.getItem('spotify_refresh_token');
+  
+  if (token && expires <= Date.now() && refreshToken) {
+    // Try to refresh token
+    console.log("Spotify: Access token expired. Refreshing...");
+    try {
+      const response = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: refreshToken,
+          client_id: spotifyConfig.clientId
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        token = data.access_token;
+        const newRefreshToken = data.refresh_token || refreshToken;
+        localStorage.setItem('spotify_token', token);
+        if (data.refresh_token) {
+          localStorage.setItem('spotify_refresh_token', data.refresh_token);
+        }
+        expires = Date.now() + data.expires_in * 1000;
+        localStorage.setItem('spotify_expires', expires.toString());
+        console.log("Spotify: Token refreshed successfully.");
+        await saveSpotifyTokensToCloud(token, newRefreshToken, expires);
+      } else {
+        console.warn("Spotify: Token refresh failed. Disconnecting.");
+        token = null;
+      }
+    } catch (e) {
+      console.error("Error refreshing Spotify token:", e);
+      token = null;
+    }
+  }
+  
+  if (token && expires > Date.now()) {
+    state.spotifyToken = token;
+    btnSpotify.classList.add('linked');
+    spotifyText.textContent = "Spotify Linked";
+    btnSpotify.title = "Spotify Active. Click to Disconnect.";
+    btnSpotify.style.borderColor = "#1db954";
+    btnSpotify.style.color = "#1db954";
+  } else {
+    state.spotifyToken = null;
+    btnSpotify.classList.remove('linked');
+    spotifyText.textContent = "Spotify";
+    btnSpotify.title = "Link Spotify account to pause music on timer events";
+    btnSpotify.style.borderColor = "";
+    btnSpotify.style.color = "";
+    
+    // Clean up storage
+    localStorage.removeItem('spotify_token');
+    localStorage.removeItem('spotify_refresh_token');
+    localStorage.removeItem('spotify_expires');
+    localStorage.removeItem('spotify_code_verifier');
+  }
+  
+  // Update integrated Spotify player UI & start polling if active
+  initSpotifyWidget();
+}
+
+async function handleSpotifyAuth() {
+  const isConfigured = typeof spotifyConfig !== 'undefined' && 
+                       spotifyConfig.clientId && 
+                       !spotifyConfig.clientId.includes('YOUR_SPOTIFY_CLIENT_ID');
+                       
+  if (!isConfigured) {
+    alert("Spotify Client ID is not configured!\n\nTo link Spotify:\n1. Go to developer.spotify.com and create a free app.\n2. Add 'http://127.0.0.1:8456/' and 'http://127.0.0.1:8456/debug.html' to your Spotify App redirect URIs.\n3. Paste your Client ID into config.js.");
+    return;
+  }
+  
+  if (state.spotifyToken) {
+    // Disconnect
+    localStorage.removeItem('spotify_token');
+    localStorage.removeItem('spotify_refresh_token');
+    localStorage.removeItem('spotify_expires');
+    localStorage.removeItem('spotify_code_verifier');
+    await checkSpotifyHashToken();
+    console.log("Spotify Disconnected.");
+    alert("Spotify disconnected successfully.");
+  } else {
+    // Generate PKCE code challenge & redirect
+    const codeVerifier = generateRandomString(64);
+    localStorage.setItem('spotify_code_verifier', codeVerifier);
+    
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+    
+    let redirectUri = window.location.origin + window.location.pathname;
+    redirectUri = redirectUri.replace('localhost', '127.0.0.1');
+    
+    const scope = "user-modify-playback-state user-read-playback-state playlist-read-private playlist-read-collaborative";
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${spotifyConfig.clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=code&code_challenge_method=S256&code_challenge=${codeChallenge}&show_dialog=true`;
+    
+    window.location.href = authUrl;
+  }
+}
+
+// Integrated Player Logic
+let spotifyPlaylistsLoaded = false;
+let spotifyPollingInterval = null;
+let spotifyPlayerState = null;
+
+function initSpotifyWidget() {
+  if (state.spotifyToken) {
+    if (spotifyPlayerContainer) spotifyPlayerContainer.style.display = 'block';
+    
+    if (!spotifyPlaylistsLoaded) {
+      fetchSpotifyPlaylists();
+    }
+    
+    fetchSpotifyPlayerState();
+    
+    if (!spotifyPollingInterval) {
+      spotifyPollingInterval = setInterval(fetchSpotifyPlayerState, 4000);
+    }
+  } else {
+    if (spotifyPlayerContainer) spotifyPlayerContainer.style.display = 'none';
+    if (spotifyPollingInterval) {
+      clearInterval(spotifyPollingInterval);
+      spotifyPollingInterval = null;
+    }
+    spotifyPlaylistsLoaded = false;
+    spotifyPlayerState = null;
+  }
+}
+
+async function fetchSpotifyPlaylists() {
+  if (!state.spotifyToken) return;
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/playlists?limit=30", {
+      headers: {
+        "Authorization": `Bearer ${state.spotifyToken}`
+      }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (spotifyDropdownMenu) {
+        spotifyDropdownMenu.innerHTML = '';
+        data.items.forEach(playlist => {
+          const item = document.createElement('div');
+          item.className = 'spotify-dropdown-item';
+          item.dataset.uri = playlist.uri;
+          
+          let imgMarkup = '';
+          if (playlist.images && playlist.images.length > 0) {
+            const imgUrl = playlist.images[playlist.images.length - 1].url;
+            imgMarkup = `<img src="${imgUrl}" alt="${playlist.name}">`;
+          } else {
+            imgMarkup = `<div class="spotify-playlist-fallback">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/>
+              </svg>
+            </div>`;
+          }
+          
+          item.innerHTML = `
+            ${imgMarkup}
+            <span>${playlist.name}</span>
+          `;
+          
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectPlaylist(playlist.uri, playlist.name);
+          });
+          
+          spotifyDropdownMenu.appendChild(item);
+        });
+        spotifyPlaylistsLoaded = true;
+      }
+    } else {
+      const errText = await response.text();
+      console.error("Spotify Playlists Fetch Error:", response.status, errText);
+      if (response.status === 403) {
+        alert("Spotify playlists failed to load (403 Forbidden).\n\nSince your Spotify app is in Development Mode, you must add your Spotify account email to the 'User Management' tab in your Spotify Developer Dashboard!");
+      } else {
+        alert("Failed to load Spotify playlists: " + response.status + " " + errText);
+      }
+    }
+  } catch (e) {
+    console.error("Error fetching Spotify playlists:", e);
+  }
+}
+
+function toggleSpotifyDropdown(e) {
+  e.stopPropagation();
+  if (spotifyDropdown) {
+    spotifyDropdown.classList.toggle('open');
+  }
+}
+
+async function selectPlaylist(playlistUri, playlistName) {
+  if (spotifyDropdownSelectedText) {
+    spotifyDropdownSelectedText.textContent = playlistName;
+  }
+  if (spotifyDropdown) {
+    spotifyDropdown.classList.remove('open');
+  }
+  
+  if (!playlistUri || !state.spotifyToken) return;
+  
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${state.spotifyToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        context_uri: playlistUri
+      })
+    });
+    
+    if (response.ok) {
+      console.log("Spotify: Started playlist:", playlistUri);
+      setTimeout(fetchSpotifyPlayerState, 1000);
+    } else if (response.status === 404) {
+      alert("No active Spotify device found. Please open Spotify on your phone or computer, start playing any track, and try again!");
+      if (spotifyDropdownSelectedText) {
+        spotifyDropdownSelectedText.textContent = "Select Playlist";
+      }
+    }
+  } catch (err) {
+    console.error("Error playing playlist:", err);
+  }
+}
+
+async function fetchSpotifyPlayerState() {
+  if (!state.spotifyToken) return;
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/player", {
+      headers: {
+        "Authorization": `Bearer ${state.spotifyToken}`
+      }
+    });
+    
+    if (response.status === 204 || response.status === 404) {
+      if (spotifyNowPlaying) spotifyNowPlaying.style.display = 'none';
+      if (spotifyNoDevice) spotifyNoDevice.style.display = 'block';
+      spotifyPlayerState = null;
+      return;
+    }
+    
+    if (response.ok) {
+      const data = await response.json();
+      spotifyPlayerState = data;
+      if (spotifyNoDevice) spotifyNoDevice.style.display = 'none';
+      if (spotifyNowPlaying) spotifyNowPlaying.style.display = 'flex';
+      
+      if (data.item) {
+        if (spotifyTrackName) spotifyTrackName.textContent = data.item.name;
+        if (spotifyTrackArtist) spotifyTrackArtist.textContent = data.item.artists.map(a => a.name).join(', ');
+        if (spotifyAlbumArt && data.item.album && data.item.album.images.length > 0) {
+          spotifyAlbumArt.src = data.item.album.images[0].url;
+          spotifyAlbumArt.style.display = 'block';
+        }
+      }
+      
+      if (spotifyPlayPath) {
+        if (data.is_playing) {
+          spotifyPlayPath.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z'); // Pause icon
+          if (spotifyPlayBtn) spotifyPlayBtn.title = "Pause";
+        } else {
+          spotifyPlayPath.setAttribute('d', 'M8 5v14l11-7z'); // Play icon
+          if (spotifyPlayBtn) spotifyPlayBtn.title = "Play";
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error fetching Spotify player state:", e);
+  }
+}
+
+async function handleSpotifyPlayPause() {
+  if (!state.spotifyToken) return;
+  const isPlaying = spotifyPlayerState && spotifyPlayerState.is_playing;
+  const endpoint = isPlaying ? "pause" : "play";
+  
+  try {
+    const response = await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${state.spotifyToken}`
+      }
+    });
+    
+    if (response.ok) {
+      if (spotifyPlayerState) spotifyPlayerState.is_playing = !isPlaying;
+      if (spotifyPlayPath) {
+        if (!isPlaying) {
+          spotifyPlayPath.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+        } else {
+          spotifyPlayPath.setAttribute('d', 'M8 5v14l11-7z');
+        }
+      }
+      setTimeout(fetchSpotifyPlayerState, 800);
+    } else if (response.status === 404) {
+      alert("No active Spotify device found. Start playing on your device first.");
+    }
+  } catch (e) {
+    console.error("Error toggling play/pause:", e);
+  }
+}
+
+async function handleSpotifyPrev() {
+  if (!state.spotifyToken) return;
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/player/previous", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${state.spotifyToken}`
+      }
+    });
+    if (response.ok) {
+      setTimeout(fetchSpotifyPlayerState, 800);
+    }
+  } catch (e) {
+    console.error("Error previous track:", e);
+  }
+}
+
+async function handleSpotifyNext() {
+  if (!state.spotifyToken) return;
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/player/next", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${state.spotifyToken}`
+      }
+    });
+    if (response.ok) {
+      setTimeout(fetchSpotifyPlayerState, 800);
+    }
+  } catch (e) {
+    console.error("Error next track:", e);
+  }
+}
+
+async function spotifyPause() {
+  if (!state.spotifyToken) return;
+  
+  const expires = Number(localStorage.getItem('spotify_expires') || '0');
+  if (expires <= Date.now()) {
+    await checkSpotifyHashToken();
+    return;
+  }
+  
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/player/pause", {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${state.spotifyToken}`
+      }
+    });
+    if (response.ok) {
+      console.log("Spotify: Auto-paused playback.");
+      setTimeout(fetchSpotifyPlayerState, 800);
+    }
+  } catch (e) {
+    console.error("Spotify auto-pause error:", e);
+  }
+}
+
+async function spotifyPlay() {
+  if (!state.spotifyToken) return;
+  
+  const expires = Number(localStorage.getItem('spotify_expires') || '0');
+  if (expires <= Date.now()) {
+    await checkSpotifyHashToken();
+    return;
+  }
+  
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${state.spotifyToken}`
+      }
+    });
+    if (response.ok) {
+      console.log("Spotify: Auto-resumed playback.");
+      setTimeout(fetchSpotifyPlayerState, 800);
+    }
+  } catch (e) {
+    console.error("Spotify auto-play error:", e);
   }
 }
 
@@ -244,8 +979,8 @@ function getCreativeCommentary(artObj) {
     437658: "Seurat's pointillist masterpiece is made of millions of tiny color dots. He arranges the musicians in a strict, geometric layout under artificial gaslight, creating a surreal, silent atmosphere that makes a noisy street circus feel like a solemn ritual.",
     436819: "Klimt surrounds nine-year-old Mada with vibrant floral patterns and active colors. Her confident, hands-on-hips stance radiates a youthful, defiant energy that jumps off the canvas.",
     45434: "Hokusai's iconic woodblock print pits a giant, claw-like wave of Prussian Blue against the sacred, stationary Mount Fuji. It captures the sublime, terrifying power of nature and the vulnerability of the fishermen, a central theme in Edo art.",
-    435882: "Cezanne strips away the traditional drama of tavern card games. He paints the peasants as quiet, solid forms, concentrated on their cards. This focus on geometric structure and quiet dignity laid the groundwork for Cubism.",
-    435883: "Cezanne uses deliberate patches of color to build a sense of solid permanence in everyday objects. His apples look heavy and structural, turning a simple still life into a monument of form and spatial relationships.",
+    435868: "Cezanne strips away the traditional drama of tavern card games. He paints the peasants as quiet, solid forms, concentrated on their cards. This focus on geometric structure and quiet dignity laid the groundwork for Cubism.",
+    435882: "Cezanne uses deliberate patches of color to build a sense of solid permanence in everyday objects. His apples look heavy and structural, turning a simple still life into a monument of form and spatial relationships.",
     438015: "Sargent's portrait of Madame Gautreau shocked Parisian society with its bold, aristocratic poise and pale skin. The contrast of the dark dress against the warm background creates a statuesque silhouette that defines high-society allure and tension.",
     438023: "Dubbed 'The Three Graces' by the Prince of Wales, Sargent paints three wealthy sisters in a glowing white silk interior. His fluid, sweeping brushstrokes capture the pinnacle of late-Victorian elegance and wealth.",
     436139: "Degas takes us behind the scenes of a ballet rehearsal under the watchful eye of Jules Perrot. He focuses on the dancers' natural, un-poised movements—stretching, adjusting dresses, and resting—capturing the exhausting reality of beauty.",
@@ -446,6 +1181,9 @@ function handleTimerComplete() {
   darkOverlay.style.opacity = 0.85; // Dim the screen to draw focus to the controls
   
   if (state.mode === 'focus') {
+    // Pause Spotify playback automatically when timer goes off
+    spotifyPause();
+
     // Desktop system notification
     sendDesktopNotification("Focus Session Complete! 🔔", "Time to reflect on the artwork and take a short break.");
 
@@ -505,20 +1243,46 @@ function submitReflection() {
   const commentText = reflectionInput.value.trim() || "Focused with this piece.";
   
   const historyItem = {
+    id: state.currentArt.id || 0,
     title: state.currentArt.title,
     artist: state.currentArt.artist,
     date: state.currentArt.date,
-    medium: state.currentArt.medium,
+    medium: state.currentArt.medium || "Oil on canvas",
     imageUrl: state.currentArt.imageUrl,
     comment: commentText,
     timestamp: new Date().toISOString()
   };
   
-  const history = JSON.parse(localStorage.getItem('met_timer_history') || '[]');
-  history.unshift(historyItem);
-  localStorage.setItem('met_timer_history', JSON.stringify(history));
+  // Save current art ID to seen history so it is never repeated
+  if (state.currentArt.id) {
+    if (!state.seenArtworkIds.includes(state.currentArt.id)) {
+      state.seenArtworkIds.push(state.currentArt.id);
+      localStorage.setItem('seenArtworkIds', JSON.stringify(state.seenArtworkIds));
+      
+      if (state.user && state.db) {
+        state.db.collection('users').doc(state.user.uid).collection('metadata').doc('user_data').set({
+          seenArtworkIds: state.seenArtworkIds
+        }).catch(err => console.error("Error saving seen list:", err));
+      }
+    }
+  }
   
-  loadGallery();
+  // Save reflection comment to Cloud DB or local storage
+  if (state.user && state.db) {
+    state.db.collection('users').doc(state.user.uid).collection('reflections').add(historyItem)
+      .then(() => {
+        let cloudCache = JSON.parse(localStorage.getItem('cloud_reflections_cache') || '[]');
+        cloudCache.unshift(historyItem);
+        localStorage.setItem('cloud_reflections_cache', JSON.stringify(cloudCache));
+        loadGallery();
+      })
+      .catch(err => {
+        console.error("Firestore write failed. Falling back to local storage.", err);
+        saveReflectionLocally(historyItem);
+      });
+  } else {
+    saveReflectionLocally(historyItem);
+  }
   
   const selectedOption = document.querySelector('input[name="artChoice"]:checked').value;
   state.artChoiceNextSession = selectedOption;
@@ -534,8 +1298,20 @@ function submitReflection() {
   startTimer();
 }
 
-function loadGallery() {
+function saveReflectionLocally(historyItem) {
   const history = JSON.parse(localStorage.getItem('met_timer_history') || '[]');
+  history.unshift(historyItem);
+  localStorage.setItem('met_timer_history', JSON.stringify(history));
+  loadGallery();
+}
+
+function loadGallery() {
+  let history = [];
+  if (state.user) {
+    history = JSON.parse(localStorage.getItem('cloud_reflections_cache') || '[]');
+  } else {
+    history = JSON.parse(localStorage.getItem('met_timer_history') || '[]');
+  }
   
   if (history.length === 0) {
     galleryContent.innerHTML = `
