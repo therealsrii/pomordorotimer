@@ -496,6 +496,9 @@ async function checkSpotifyHashToken() {
     
     let redirectUri = window.location.origin + window.location.pathname;
     redirectUri = redirectUri.replace('localhost', '127.0.0.1');
+    if (redirectUri.endsWith('/index.html')) {
+      redirectUri = redirectUri.replace('/index.html', '/');
+    }
     
     // Clear URL query parameters immediately
     window.history.replaceState("", document.title, window.location.pathname);
@@ -631,6 +634,9 @@ async function handleSpotifyAuth() {
     
     let redirectUri = window.location.origin + window.location.pathname;
     redirectUri = redirectUri.replace('localhost', '127.0.0.1');
+    if (redirectUri.endsWith('/index.html')) {
+      redirectUri = redirectUri.replace('/index.html', '/');
+    }
     
     const scope = "user-modify-playback-state user-read-playback-state playlist-read-private playlist-read-collaborative";
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${spotifyConfig.clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=code&code_challenge_method=S256&code_challenge=${codeChallenge}&show_dialog=true`;
