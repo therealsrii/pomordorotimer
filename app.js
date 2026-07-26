@@ -67,8 +67,7 @@ let state = {
   artPool: [], // Pool of all Met painting object IDs
   user: null, // Firebase authenticated user
   firebaseActive: false, // Flag indicating if Firebase initialized successfully
-  db: null, // Firestore database instance
-  spotifyToken: null // Spotify Access Token for controlling playback
+  db: null // Firestore database instance
 };
 
 // DOM Elements
@@ -100,23 +99,7 @@ const appHeaderFloating = document.querySelector('.app-header-floating');
 const btnLogin = document.getElementById('btnLogin');
 let loginText = document.getElementById('loginText');
 
-const btnSpotify = document.getElementById('btnSpotify');
-const spotifyText = document.getElementById('spotifyText');
 
-const spotifyPlayerContainer = document.getElementById('spotifyPlayerContainer');
-const spotifyDropdown = document.getElementById('spotifyDropdown');
-const spotifyDropdownTrigger = document.getElementById('spotifyDropdownTrigger');
-const spotifyDropdownSelectedText = document.getElementById('spotifyDropdownSelectedText');
-const spotifyDropdownMenu = document.getElementById('spotifyDropdownMenu');
-const spotifyNowPlaying = document.getElementById('spotifyNowPlaying');
-const spotifyAlbumArt = document.getElementById('spotifyAlbumArt');
-const spotifyTrackName = document.getElementById('spotifyTrackName');
-const spotifyTrackArtist = document.getElementById('spotifyTrackArtist');
-const spotifyPrevBtn = document.getElementById('spotifyPrevBtn');
-const spotifyPlayBtn = document.getElementById('spotifyPlayBtn');
-const spotifyNextBtn = document.getElementById('spotifyNextBtn');
-const spotifyNoDevice = document.getElementById('spotifyNoDevice');
-const spotifyPlayPath = document.getElementById('spotifyPlayPath');
 
 const galleryDrawer = document.getElementById('galleryDrawer');
 const btnGalleryToggle = document.getElementById('btnGalleryToggle');
@@ -127,12 +110,6 @@ const galleryContent = document.getElementById('galleryContent');
    Initialisation
    ========================================================================== */
 async function init() {
-  // Auto-redirect localhost to 127.0.0.1 to maintain single origin state (LocalStorage/Firebase/Spotify)
-  if (window.location.hostname === 'localhost') {
-    window.location.href = window.location.href.replace('localhost', '127.0.0.1');
-    return;
-  }
-
   setupEventListeners();
   setupDragAndDrop();
   updateTimerDisplay();
@@ -143,9 +120,6 @@ async function init() {
   
   // Initialise Firebase Auth & DB (falls back gracefully to LocalStorage mode)
   setupFirebase();
-  
-  // Initialise Spotify Auth & state checks
-  await checkSpotifyHashToken();
   
   // Select a random masterpiece locally for instant welcome load on reload!
   const randomItem = CURATED_ARTWORKS[Math.floor(Math.random() * CURATED_ARTWORKS.length)];
@@ -164,23 +138,9 @@ function setupEventListeners() {
   btnSkip.addEventListener('click', handleSkip);
   btnSubmitReflection.addEventListener('click', submitReflection);
   btnLogin.addEventListener('click', handleAuthAction);
-  btnSpotify.addEventListener('click', handleSpotifyAuth);
   
   btnGalleryToggle.addEventListener('click', toggleGallery);
   btnGalleryClose.addEventListener('click', toggleGallery);
-  
-  if (spotifyDropdownTrigger) {
-    spotifyDropdownTrigger.addEventListener('click', toggleSpotifyDropdown);
-    spotifyPrevBtn.addEventListener('click', handleSpotifyPrev);
-    spotifyPlayBtn.addEventListener('click', handleSpotifyPlayPause);
-    spotifyNextBtn.addEventListener('click', handleSpotifyNext);
-    
-    document.addEventListener('click', (e) => {
-      if (spotifyDropdown && !spotifyDropdown.contains(e.target)) {
-        spotifyDropdown.classList.remove('open');
-      }
-    });
-  }
 }
 
 /* ==========================================================================
@@ -400,27 +360,6 @@ async function syncUserDataOnLogin(uid) {
     
     localStorage.setItem('cloud_reflections_cache', JSON.stringify(cloudReflections));
     
-    // Sync Spotify Tokens from cloud to local or vice-versa
-    const spotifyDoc = await state.db.collection('users').doc(uid).collection('metadata').doc('spotify_tokens').get();
-    if (spotifyDoc.exists) {
-      const spData = spotifyDoc.data();
-      localStorage.setItem('spotify_token', spData.access_token || "");
-      localStorage.setItem('spotify_refresh_token', spData.refresh_token || "");
-      localStorage.setItem('spotify_expires', spData.expires || "0");
-      await checkSpotifyHashToken();
-    } else {
-      const localToken = localStorage.getItem('spotify_token');
-      const localRefresh = localStorage.getItem('spotify_refresh_token');
-      const localExpires = localStorage.getItem('spotify_expires');
-      if (localToken && localExpires) {
-        await state.db.collection('users').doc(uid).collection('metadata').doc('spotify_tokens').set({
-          access_token: localToken,
-          refresh_token: localRefresh || "",
-          expires: localExpires
-        }).catch(e => console.error("Error saving local spotify to cloud:", e));
-      }
-    }
-    
     loadGallery();
   } catch (err) {
     console.error("Error syncing user data on login:", err);
@@ -449,491 +388,7 @@ function handleAuthAction() {
 }
 
 /* ==========================================================================
-   Spotify Remote Control Integration (OAuth PKCE Flow)
-   ========================================================================== */
-
-function generateRandomString(length) {
-  let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < length; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
-}
-
-async function generateCodeChallenge(codeVerifier) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(codeVerifier);
-  const digest = await window.crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode.apply(null, new Uint8Array(digest)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-}
-
-async function saveSpotifyTokensToCloud(accessToken, refreshToken, expiresAt) {
-  if (state.user && state.db) {
-    await state.db.collection('users').doc(state.user.uid).collection('metadata').doc('spotify_tokens').set({
-      access_token: accessToken,
-      refresh_token: refreshToken || "",
-      expires: expiresAt.toString()
-    }).catch(e => console.error("Error saving spotify tokens to cloud:", e));
-  }
-}
-
-async function checkSpotifyHashToken() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get('code');
-  
-  if (code) {
-    // We received an auth code! Exchange it for an access token.
-    const codeVerifier = localStorage.getItem('spotify_code_verifier');
-    if (!codeVerifier) {
-      console.warn("Spotify: Missing code_verifier in LocalStorage. Origin mismatch between auth request and callback.");
-      alert("Spotify linking failed due to domain mismatch (localhost vs 127.0.0.1). Always use http://127.0.0.1:8456/ in your browser address bar.");
-      return;
-    }
-    
-    let redirectUri = window.location.origin + window.location.pathname;
-    redirectUri = redirectUri.replace('localhost', '127.0.0.1');
-    if (redirectUri.endsWith('/index.html')) {
-      redirectUri = redirectUri.replace('/index.html', '/');
-    }
-    
-    // Clear URL query parameters immediately
-    window.history.replaceState("", document.title, window.location.pathname);
-    
-    try {
-      const response = await fetch("https://accounts.spotify.com/api/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({
-          grant_type: "authorization_code",
-          code: code,
-          redirect_uri: redirectUri,
-          client_id: spotifyConfig.clientId,
-          code_verifier: codeVerifier
-        })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const expireTime = Date.now() + data.expires_in * 1000;
-        localStorage.setItem('spotify_token', data.access_token);
-        localStorage.setItem('spotify_refresh_token', data.refresh_token);
-        localStorage.setItem('spotify_expires', expireTime.toString());
-        console.log("Spotify: Authentication successful.");
-        await saveSpotifyTokensToCloud(data.access_token, data.refresh_token, expireTime);
-        alert("Spotify Linked Successfully!");
-      } else {
-        const err = await response.json();
-        console.error("Spotify token exchange failed:", err);
-        alert("Spotify Link Failed: " + (err.error_description || err.error || JSON.stringify(err)));
-      }
-    } catch (e) {
-      console.error("Error exchanging Spotify code:", e);
-    }
-  }
-  
-  // Load token from storage and check expiration
-  let token = localStorage.getItem('spotify_token');
-  let expires = Number(localStorage.getItem('spotify_expires') || '0');
-  const refreshToken = localStorage.getItem('spotify_refresh_token');
-  
-  if (token && expires <= Date.now() && refreshToken) {
-    // Try to refresh token
-    console.log("Spotify: Access token expired. Refreshing...");
-    try {
-      const response = await fetch("https://accounts.spotify.com/api/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({
-          grant_type: "refresh_token",
-          refresh_token: refreshToken,
-          client_id: spotifyConfig.clientId
-        })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        token = data.access_token;
-        const newRefreshToken = data.refresh_token || refreshToken;
-        localStorage.setItem('spotify_token', token);
-        if (data.refresh_token) {
-          localStorage.setItem('spotify_refresh_token', data.refresh_token);
-        }
-        expires = Date.now() + data.expires_in * 1000;
-        localStorage.setItem('spotify_expires', expires.toString());
-        console.log("Spotify: Token refreshed successfully.");
-        await saveSpotifyTokensToCloud(token, newRefreshToken, expires);
-      } else {
-        console.warn("Spotify: Token refresh failed. Disconnecting.");
-        token = null;
-      }
-    } catch (e) {
-      console.error("Error refreshing Spotify token:", e);
-      token = null;
-    }
-  }
-  
-  if (token && expires > Date.now()) {
-    state.spotifyToken = token;
-    btnSpotify.classList.add('linked');
-    spotifyText.textContent = "Spotify Linked";
-    btnSpotify.title = "Spotify Active. Click to Disconnect.";
-    btnSpotify.style.borderColor = "#1db954";
-    btnSpotify.style.color = "#1db954";
-  } else {
-    state.spotifyToken = null;
-    btnSpotify.classList.remove('linked');
-    spotifyText.textContent = "Spotify";
-    btnSpotify.title = "Link Spotify account to pause music on timer events";
-    btnSpotify.style.borderColor = "";
-    btnSpotify.style.color = "";
-    
-    // Clean up storage
-    localStorage.removeItem('spotify_token');
-    localStorage.removeItem('spotify_refresh_token');
-    localStorage.removeItem('spotify_expires');
-    localStorage.removeItem('spotify_code_verifier');
-  }
-  
-  // Update integrated Spotify player UI & start polling if active
-  initSpotifyWidget();
-}
-
-async function handleSpotifyAuth() {
-  const isConfigured = typeof spotifyConfig !== 'undefined' && 
-                       spotifyConfig.clientId && 
-                       !spotifyConfig.clientId.includes('YOUR_SPOTIFY_CLIENT_ID');
-                       
-  if (!isConfigured) {
-    alert("Spotify Client ID is not configured!\n\nTo link Spotify:\n1. Go to developer.spotify.com and create a free app.\n2. Add 'http://127.0.0.1:8456/' and 'http://127.0.0.1:8456/debug.html' to your Spotify App redirect URIs.\n3. Paste your Client ID into config.js.");
-    return;
-  }
-  
-  if (state.spotifyToken) {
-    // Disconnect
-    localStorage.removeItem('spotify_token');
-    localStorage.removeItem('spotify_refresh_token');
-    localStorage.removeItem('spotify_expires');
-    localStorage.removeItem('spotify_code_verifier');
-    await checkSpotifyHashToken();
-    console.log("Spotify Disconnected.");
-    alert("Spotify disconnected successfully.");
-  } else {
-    // Generate PKCE code challenge & redirect
-    const codeVerifier = generateRandomString(64);
-    localStorage.setItem('spotify_code_verifier', codeVerifier);
-    
-    const codeChallenge = await generateCodeChallenge(codeVerifier);
-    
-    let redirectUri = window.location.origin + window.location.pathname;
-    redirectUri = redirectUri.replace('localhost', '127.0.0.1');
-    if (redirectUri.endsWith('/index.html')) {
-      redirectUri = redirectUri.replace('/index.html', '/');
-    }
-    
-    const scope = "user-modify-playback-state user-read-playback-state playlist-read-private playlist-read-collaborative";
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${spotifyConfig.clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=code&code_challenge_method=S256&code_challenge=${codeChallenge}&show_dialog=true`;
-    
-    window.location.href = authUrl;
-  }
-}
-
-// Integrated Player Logic
-let spotifyPlaylistsLoaded = false;
-let spotifyPollingInterval = null;
-let spotifyPlayerState = null;
-
-function initSpotifyWidget() {
-  if (state.spotifyToken) {
-    if (spotifyPlayerContainer) spotifyPlayerContainer.style.display = 'block';
-    
-    if (!spotifyPlaylistsLoaded) {
-      fetchSpotifyPlaylists();
-    }
-    
-    fetchSpotifyPlayerState();
-    
-    if (!spotifyPollingInterval) {
-      spotifyPollingInterval = setInterval(fetchSpotifyPlayerState, 4000);
-    }
-  } else {
-    if (spotifyPlayerContainer) spotifyPlayerContainer.style.display = 'none';
-    if (spotifyPollingInterval) {
-      clearInterval(spotifyPollingInterval);
-      spotifyPollingInterval = null;
-    }
-    spotifyPlaylistsLoaded = false;
-    spotifyPlayerState = null;
-  }
-}
-
-async function fetchSpotifyPlaylists() {
-  if (!state.spotifyToken) return;
-  try {
-    const response = await fetch("https://api.spotify.com/v1/me/playlists?limit=30", {
-      headers: {
-        "Authorization": `Bearer ${state.spotifyToken}`
-      }
-    });
-    if (response.ok) {
-      const data = await response.json();
-      if (spotifyDropdownMenu) {
-        spotifyDropdownMenu.innerHTML = '';
-        data.items.forEach(playlist => {
-          const item = document.createElement('div');
-          item.className = 'spotify-dropdown-item';
-          item.dataset.uri = playlist.uri;
-          
-          let imgMarkup = '';
-          if (playlist.images && playlist.images.length > 0) {
-            const imgUrl = playlist.images[playlist.images.length - 1].url;
-            imgMarkup = `<img src="${imgUrl}" alt="${playlist.name}">`;
-          } else {
-            imgMarkup = `<div class="spotify-playlist-fallback">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/>
-              </svg>
-            </div>`;
-          }
-          
-          item.innerHTML = `
-            ${imgMarkup}
-            <span>${playlist.name}</span>
-          `;
-          
-          item.addEventListener('click', (e) => {
-            e.stopPropagation();
-            selectPlaylist(playlist.uri, playlist.name);
-          });
-          
-          spotifyDropdownMenu.appendChild(item);
-        });
-        spotifyPlaylistsLoaded = true;
-      }
-    } else {
-      const errText = await response.text();
-      console.error("Spotify Playlists Fetch Error:", response.status, errText);
-      if (response.status === 403) {
-        alert("Spotify playlists failed to load (403 Forbidden).\n\nSince your Spotify app is in Development Mode, you must add your Spotify account email to the 'User Management' tab in your Spotify Developer Dashboard!");
-      } else {
-        alert("Failed to load Spotify playlists: " + response.status + " " + errText);
-      }
-    }
-  } catch (e) {
-    console.error("Error fetching Spotify playlists:", e);
-  }
-}
-
-function toggleSpotifyDropdown(e) {
-  e.stopPropagation();
-  if (spotifyDropdown) {
-    spotifyDropdown.classList.toggle('open');
-  }
-}
-
-async function selectPlaylist(playlistUri, playlistName) {
-  if (spotifyDropdownSelectedText) {
-    spotifyDropdownSelectedText.textContent = playlistName;
-  }
-  if (spotifyDropdown) {
-    spotifyDropdown.classList.remove('open');
-  }
-  
-  if (!playlistUri || !state.spotifyToken) return;
-  
-  try {
-    const response = await fetch("https://api.spotify.com/v1/me/player/play", {
-      method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${state.spotifyToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        context_uri: playlistUri
-      })
-    });
-    
-    if (response.ok) {
-      console.log("Spotify: Started playlist:", playlistUri);
-      setTimeout(fetchSpotifyPlayerState, 1000);
-    } else if (response.status === 404) {
-      alert("No active Spotify device found. Please open Spotify on your phone or computer, start playing any track, and try again!");
-      if (spotifyDropdownSelectedText) {
-        spotifyDropdownSelectedText.textContent = "Select Playlist";
-      }
-    }
-  } catch (err) {
-    console.error("Error playing playlist:", err);
-  }
-}
-
-async function fetchSpotifyPlayerState() {
-  if (!state.spotifyToken) return;
-  try {
-    const response = await fetch("https://api.spotify.com/v1/me/player", {
-      headers: {
-        "Authorization": `Bearer ${state.spotifyToken}`
-      }
-    });
-    
-    if (response.status === 204 || response.status === 404) {
-      if (spotifyNowPlaying) spotifyNowPlaying.style.display = 'none';
-      if (spotifyNoDevice) spotifyNoDevice.style.display = 'block';
-      spotifyPlayerState = null;
-      return;
-    }
-    
-    if (response.ok) {
-      const data = await response.json();
-      spotifyPlayerState = data;
-      if (spotifyNoDevice) spotifyNoDevice.style.display = 'none';
-      if (spotifyNowPlaying) spotifyNowPlaying.style.display = 'flex';
-      
-      if (data.item) {
-        if (spotifyTrackName) spotifyTrackName.textContent = data.item.name;
-        if (spotifyTrackArtist) spotifyTrackArtist.textContent = data.item.artists.map(a => a.name).join(', ');
-        if (spotifyAlbumArt && data.item.album && data.item.album.images.length > 0) {
-          spotifyAlbumArt.src = data.item.album.images[0].url;
-          spotifyAlbumArt.style.display = 'block';
-        }
-      }
-      
-      if (spotifyPlayPath) {
-        if (data.is_playing) {
-          spotifyPlayPath.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z'); // Pause icon
-          if (spotifyPlayBtn) spotifyPlayBtn.title = "Pause";
-        } else {
-          spotifyPlayPath.setAttribute('d', 'M8 5v14l11-7z'); // Play icon
-          if (spotifyPlayBtn) spotifyPlayBtn.title = "Play";
-        }
-      }
-    }
-  } catch (e) {
-    console.error("Error fetching Spotify player state:", e);
-  }
-}
-
-async function handleSpotifyPlayPause() {
-  if (!state.spotifyToken) return;
-  const isPlaying = spotifyPlayerState && spotifyPlayerState.is_playing;
-  const endpoint = isPlaying ? "pause" : "play";
-  
-  try {
-    const response = await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, {
-      method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${state.spotifyToken}`
-      }
-    });
-    
-    if (response.ok) {
-      if (spotifyPlayerState) spotifyPlayerState.is_playing = !isPlaying;
-      if (spotifyPlayPath) {
-        if (!isPlaying) {
-          spotifyPlayPath.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
-        } else {
-          spotifyPlayPath.setAttribute('d', 'M8 5v14l11-7z');
-        }
-      }
-      setTimeout(fetchSpotifyPlayerState, 800);
-    } else if (response.status === 404) {
-      alert("No active Spotify device found. Start playing on your device first.");
-    }
-  } catch (e) {
-    console.error("Error toggling play/pause:", e);
-  }
-}
-
-async function handleSpotifyPrev() {
-  if (!state.spotifyToken) return;
-  try {
-    const response = await fetch("https://api.spotify.com/v1/me/player/previous", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${state.spotifyToken}`
-      }
-    });
-    if (response.ok) {
-      setTimeout(fetchSpotifyPlayerState, 800);
-    }
-  } catch (e) {
-    console.error("Error previous track:", e);
-  }
-}
-
-async function handleSpotifyNext() {
-  if (!state.spotifyToken) return;
-  try {
-    const response = await fetch("https://api.spotify.com/v1/me/player/next", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${state.spotifyToken}`
-      }
-    });
-    if (response.ok) {
-      setTimeout(fetchSpotifyPlayerState, 800);
-    }
-  } catch (e) {
-    console.error("Error next track:", e);
-  }
-}
-
-async function spotifyPause() {
-  if (!state.spotifyToken) return;
-  
-  const expires = Number(localStorage.getItem('spotify_expires') || '0');
-  if (expires <= Date.now()) {
-    await checkSpotifyHashToken();
-    return;
-  }
-  
-  try {
-    const response = await fetch("https://api.spotify.com/v1/me/player/pause", {
-      method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${state.spotifyToken}`
-      }
-    });
-    if (response.ok) {
-      console.log("Spotify: Auto-paused playback.");
-      setTimeout(fetchSpotifyPlayerState, 800);
-    }
-  } catch (e) {
-    console.error("Spotify auto-pause error:", e);
-  }
-}
-
-async function spotifyPlay() {
-  if (!state.spotifyToken) return;
-  
-  const expires = Number(localStorage.getItem('spotify_expires') || '0');
-  if (expires <= Date.now()) {
-    await checkSpotifyHashToken();
-    return;
-  }
-  
-  try {
-    const response = await fetch("https://api.spotify.com/v1/me/player/play", {
-      method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${state.spotifyToken}`
-      }
-    });
-    if (response.ok) {
-      console.log("Spotify: Auto-resumed playback.");
-      setTimeout(fetchSpotifyPlayerState, 800);
-    }
-  } catch (e) {
-    console.error("Spotify auto-play error:", e);
-  }
-}
+   
 
 function displayArtwork(artObj) {
   state.currentArt = artObj;
@@ -1187,9 +642,6 @@ function handleTimerComplete() {
   darkOverlay.style.opacity = 0.85; // Dim the screen to draw focus to the controls
   
   if (state.mode === 'focus') {
-    // Pause Spotify playback automatically when timer goes off
-    spotifyPause();
-
     // Desktop system notification
     sendDesktopNotification("Focus Session Complete! 🔔", "Time to reflect on the artwork and take a short break.");
 

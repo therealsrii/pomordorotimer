@@ -183,13 +183,6 @@
     
     <!-- Top-Right Actions Area -->
     <header class="app-header-floating">
-      <button class="btn btn-icon btn-spotify" id="btnSpotify" title="Link Spotify">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
-          <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.377-1.454-5.37-1.782-8.893-.982-.336.075-.668-.135-.744-.47-.077-.337.135-.668.47-.745 3.856-.88 7.15-.502 9.818 1.13.294.18.387.563.206.86zm1.225-2.72c-.227.367-.707.487-1.074.26-2.72-1.672-6.87-2.157-10.08-1.182-.413.125-.847-.11-.972-.522-.125-.413.11-.847.522-.972 3.67-1.114 8.243-.57 11.344 1.34.368.228.488.708.262 1.076zm.106-2.833c-.273.447-.858.59-1.305.318-3.155-1.874-8.365-2.07-11.373-1.157-.502.152-1.03-.135-1.182-.638-.152-.502.135-1.03.638-1.182 3.585-1.088 9.33-.865 12.986 1.306.447.272.592.858.32 1.305z"/>
-        </svg>
-        <span id="spotifyText">Spotify</span>
-      </button>
-
       <button class="btn btn-icon btn-login" id="btnLogin" title="Sign In with Google">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
           <path fill="currentColor" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.431 0-6.224-2.793-6.224-6.224 0-3.431 2.793-6.224 6.224-6.224 1.566 0 2.99.58 4.095 1.528l3.056-3.056C19.23 2.85 16.5 1.5 13.5 1.5c-5.799 0-10.5 4.701-10.5 10.5s4.701 10.5 10.5 10.5c5.03 0 9.5-3.56 9.5-9.3 0-.6-.05-1.2-.16-1.715H12.24z"/>
@@ -221,52 +214,6 @@
         <button class="btn" id="btnReset">Reset</button>
         <button class="btn btn-primary" id="btnPlayPause">Start Focus</button>
         <button class="btn" id="btnSkip">Skip</button>
-      </div>
-      
-      <!-- Spotify Integrated Player (Displays when linked) -->
-      <div id="spotifyPlayerContainer" class="spotify-player-container" style="display: none;">
-        <div class="spotify-divider"></div>
-        
-        <!-- Playlist Selector -->
-        <div class="spotify-playlist-wrapper">
-          <label class="spotify-label">Choose Playlist</label>
-          <div class="spotify-custom-dropdown" id="spotifyDropdown">
-            <button class="spotify-dropdown-trigger" id="spotifyDropdownTrigger" type="button">
-              <span id="spotifyDropdownSelectedText">Select Playlist</span>
-              <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-              </svg>
-            </button>
-            <div class="spotify-dropdown-menu" id="spotifyDropdownMenu">
-              <!-- Populated dynamically via JS -->
-            </div>
-          </div>
-        </div>
-        
-        <!-- Now Playing Widget -->
-        <div id="spotifyNowPlaying" class="spotify-now-playing" style="display: none;">
-          <img id="spotifyAlbumArt" class="spotify-album-art" src="" alt="Album Art">
-          <div class="spotify-track-details">
-            <div id="spotifyTrackName" class="spotify-track-name">Track Name</div>
-            <div id="spotifyTrackArtist" class="spotify-track-artist">Artist</div>
-          </div>
-          <div class="spotify-player-controls">
-            <button class="btn btn-icon btn-spotify-control" id="spotifyPrevBtn" title="Previous">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6L18 6v12z"/></svg>
-            </button>
-            <button class="btn btn-icon btn-spotify-control btn-play-pause" id="spotifyPlayBtn" title="Play/Pause">
-              <svg id="spotifyPlayIcon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path id="spotifyPlayPath" d="M8 5v14l11-7z"/></svg>
-            </button>
-            <button class="btn btn-icon btn-spotify-control" id="spotifyNextBtn" title="Next">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 18V6l8.5 6zm9-12h2v12h-2z"/></svg>
-            </button>
-          </div>
-        </div>
-        
-        <!-- No Active Device Notice -->
-        <div id="spotifyNoDevice" class="spotify-no-device" style="display: none;">
-          <span>No active Spotify device found. Start playing on your device to control.</span>
-        </div>
       </div>
     </div>
 
