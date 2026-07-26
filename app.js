@@ -107,8 +107,23 @@ function init() {
   setProgress(100);
   loadGallery();
   
-  // Pre-load the first artwork
-  fetchNextArtwork();
+  // Set initial state.currentArt to match the hardcoded instant-load welcome painting
+  state.currentArt = {
+    id: 436535,
+    title: "Wheat Field with Cypresses",
+    artist: "Vincent van Gogh",
+    date: "1889",
+    medium: "Oil on canvas",
+    imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP316773.jpg",
+    culture: "European",
+    dimensions: "29 x 36 3/4 in. (73.7 x 93.3 cm)",
+    department: "European Paintings",
+    creditLine: "Purchase, Metropolitan Museum of Art",
+    objectURL: "https://www.metmuseum.org/art/collection/search/436535"
+  };
+  
+  // Pre-load the next artwork in the background during idle time
+  preloadNextArtCache();
 }
 
 function setupEventListeners() {
