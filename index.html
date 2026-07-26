@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MET Art Focus Timer</title>
+  <!-- Google Fonts: Cinzel for classical titles, Inter for interface -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Local Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Fullscreen Artwork Background -->
+  <div class="fullscreen-bg-blur" id="fullscreenBgBlur"></div>
+  <div class="fullscreen-bg-contain" id="fullscreenBgContain"></div>
+  
+  <!-- Dynamic overlays for the transition effects -->
+  <div class="white-reveal-overlay" id="whiteOverlay"></div>
+  <div class="dark-dim-overlay" id="darkOverlay"></div>
+
+  <!-- App Container -->
+  <div class="app-viewport">
+    
+    <!-- Top-Right Actions Area -->
+    <header class="app-header-floating">
+      <button class="btn btn-icon btn-gallery-toggle" id="btnGalleryToggle" title="View Focus Gallery">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+          <path fill="currentColor" d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12S6.48 2 12 2zm0 18c4.41 0 8-3.59 8-8s-3.59-8-8-8s-8 3.59-8 8s3.59 8 8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+        </svg>
+        <span>History</span>
+      </button>
+    </header>
+
+    <!-- Floating Timer Box (transitions between center and top-left) -->
+    <div class="timer-card glass-panel" id="timerCard">
+      <div class="timer-mode-badge" id="timerModeBadge">Focus Session</div>
+      
+      <div class="timer-display-container">
+        <!-- Radial SVG Progress Ring -->
+        <svg class="progress-ring" width="220" height="220">
+          <circle class="progress-ring-circle-bg" stroke="rgba(255, 255, 255, 0.05)" stroke-width="6" fill="transparent" r="95" cx="110" cy="110"></circle>
+          <circle class="progress-ring-circle" id="progressRing" stroke="var(--accent-color)" stroke-width="6" stroke-dasharray="596.9" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" r="95" cx="110" cy="110"></circle>
+        </svg>
+        <div class="timer-time" id="timerDisplay">25:00</div>
+      </div>
+
+      <div class="timer-controls">
+        <button class="btn btn-secondary" id="btnReset" title="Reset Timer">Reset</button>
+        <button class="btn btn-primary btn-lg" id="btnPlayPause">Start Focus</button>
+        <button class="btn btn-secondary" id="btnSkip" title="Skip Session">Skip</button>
+      </div>
+    </div>
+
+    <!-- Reflection / Break Card Panel (Fades in in center on Focus End) -->
+    <div class="reflection-card glass-panel" id="reflectionCard">
+      <h3 class="panel-title">Break Reflection</h3>
+      <p class="panel-subtitle">Write your thoughts or impressions of this artwork:</p>
+      
+      <textarea class="reflection-input" id="reflectionInput" placeholder="How did this painting make you feel? What details did you notice as it revealed itself?"></textarea>
+      
+      <div class="reflection-options">
+        <p class="panel-subtitle">For your next focus session:</p>
+        <div class="options-group">
+          <label class="radio-label">
+            <input type="radio" name="artChoice" value="change" checked>
+            <span class="custom-radio"></span>
+            Change Art
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="artChoice" value="keep">
+            <span class="custom-radio"></span>
+            Keep Art (Re-blur)
+          </label>
+        </div>
+      </div>
+      
+      <button class="btn btn-accent btn-block" id="btnSubmitReflection">Submit & Continue</button>
+    </div>
+
+    <!-- Artwork Details Caption (Bottom-Right corner) -->
+    <div class="artwork-details-capsule glass-panel" id="artworkDetailsCapsule">
+      <div class="artwork-placeholder-mini" id="artworkPlaceholderMini">
+        <div class="spinner-mini"></div>
+        <span>Curating Met Gallery...</span>
+      </div>
+      <div class="artwork-details-content" id="artworkDetailsContent" style="display: none;">
+        <h2 class="art-title" id="artTitle">Curating Gallery...</h2>
+        <p class="art-meta" id="artMeta">Connecting to the Metropolitan Museum of Art API...</p>
+      </div>
+      
+      <!-- Poetic Hover Insight Bubble -->
+      <div class="art-context-bubble glass-panel" id="artContextBubble">
+        <div class="bubble-header">Creative Commentary</div>
+        <p class="bubble-text" id="artContextText">Gathering art insights...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Slide-out Gallery Drawer -->
+  <aside class="gallery-drawer glass-panel" id="galleryDrawer">
+    <div class="drawer-header">
+      <h3>Focus Gallery</h3>
+      <button class="btn-close" id="btnGalleryClose">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+          <path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="drawer-content" id="galleryContent">
+      <div class="empty-state">
+        <p>No completed focus sessions yet.</p>
+        <p class="subtitle">Complete a focus session and write down your reflections to build your gallery.</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Gallery Drawer closing tags -->
+
+  <script src="app.js"></script>
+</body>
+</html>

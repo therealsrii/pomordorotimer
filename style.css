@@ -1,0 +1,844 @@
+/* ==========================================================================
+   MET Art Focus Timer - Custom Stylesheet (Fullscreen Glassmorphism)
+   ========================================================================== */
+
+/* Design Tokens & Theme Variables */
+:root {
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* HSL Colors */
+  --bg-color: #000000;
+  --panel-bg: rgba(255, 255, 255, 0.08); /* Brighter glass base */
+  --panel-border: rgba(255, 255, 255, 0.32); /* Distinct Liquid Glass glare edge */
+  --text-primary: #f8fafc;
+  --text-muted: #cbd5e1;
+  
+  /* Mode Specific Colors */
+  --focus-accent: #f59e0b; /* Warm Amber/Gold */
+  --break-accent: #10b981; /* Soothing Emerald Green */
+  
+  /* Current Active Colors (Default to Focus) */
+  --accent-color: var(--focus-accent);
+  --accent-glow: rgba(245, 158, 11, 0.35);
+  
+  /* Sizing */
+  --border-radius-lg: 28px;
+  --border-radius-md: 18px;
+  --transition-smooth: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reset & Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app-viewport {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Backgrounds & Overlays
+   ========================================================================== */
+
+.fullscreen-bg-blur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -4; /* Render at the very bottom */
+  background-size: cover;
+  background-position: center;
+  background-color: #08090d;
+  filter: blur(45px) brightness(0.45); /* Soft, dimmed color bleed */
+  transform: scale(1.08); /* Prevents border bleeding artifacts */
+  transition: background-image 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fullscreen-bg-contain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -3; /* Render on top of blur but below overlays */
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Slowly load from Pure White to the image */
+.white-reveal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  background-color: #ffffff;
+  opacity: 0; /* Under Focus: transitions between 1 (opaque white) and 0 (transparent) */
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+/* Ambient dark vignette layer for legibility when idle/break */
+.dark-dim-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 50%, rgba(8, 9, 13, 0.2) 0%, rgba(8, 9, 13, 0.75) 100%);
+  pointer-events: none;
+  transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Glassmorphism Panels
+   ========================================================================== */
+
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(50px) saturate(220%); /* Apple Liquid Glass level of blur and saturation */
+  -webkit-backdrop-filter: blur(50px) saturate(220%);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.25), /* Soft ambient shadow */
+    0 25px 60px rgba(0, 0, 0, 0.35), /* Clear card drop shadow */
+    inset 0 1px 0 rgba(255, 255, 255, 0.38), /* Brighter top-edge glare */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12); /* Subtle bottom-edge shadow */
+  transition: var(--transition-smooth);
+  
+  /* Smooth anti-aliased clipping fixes */
+  overflow: hidden;
+  background-clip: padding-box;
+  -webkit-background-clip: padding-box;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.42); /* Extreme highlight on hover */
+  box-shadow: 
+    0 15px 50px rgba(0, 0, 0, 0.35),
+    0 35px 80px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+
+/* ==========================================================================
+   App Floating Header Controls (Top-Right)
+   ========================================================================== */
+
+/* Floating header adjustments */
+.app-header-floating {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 10;
+  transition: var(--transition-smooth);
+}
+
+/* ==========================================================================
+   Timer Card (Positions in Center, Transitions to Top-Left)
+   ========================================================================== */
+
+.timer-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 380px;
+  padding: 2.5rem;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transform-origin: center center;
+}
+
+/* Top-Left Active Layout (Default Snapping State) */
+.timer-card.active {
+  top: 30px;
+  left: 30px;
+  transform: translate(0, 0) scale(0.72);
+  transform-origin: top left;
+  background: rgba(8, 9, 13, 0.45); /* Elegant glass overlay */
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  cursor: grab;
+  user-select: none;
+}
+
+.timer-card.active.dragging {
+  cursor: grabbing !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  transform: translate(0, 0) scale(0.75);
+}
+
+/* Snapping Corners Classes */
+.timer-card.active.corner-top-left {
+  top: 30px;
+  left: 30px;
+  bottom: auto;
+  right: auto;
+  transform-origin: top left;
+}
+
+.timer-card.active.corner-top-right {
+  top: 30px;
+  right: 30px;
+  bottom: auto;
+  left: auto;
+  transform-origin: top right;
+}
+
+.timer-card.active.corner-bottom-left {
+  bottom: 30px;
+  left: 30px;
+  top: auto;
+  right: auto;
+  transform-origin: bottom left;
+}
+
+.timer-card.active.corner-bottom-right {
+  bottom: 30px;
+  right: 30px;
+  top: auto;
+  left: auto;
+  transform-origin: bottom right;
+}
+
+.timer-mode-badge {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 1.8rem;
+  font-weight: 600;
+  text-shadow: 0 0 15px var(--accent-glow);
+  transition: var(--transition-smooth);
+}
+
+.timer-display-container {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2.2rem;
+}
+
+/* SVG Progress Ring */
+.progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.15s linear, stroke 0.6s ease;
+  filter: drop-shadow(0 0 10px var(--accent-glow));
+}
+
+.timer-time {
+  font-family: var(--font-sans);
+  font-size: 4rem;
+  font-weight: 300;
+  color: var(--text-primary);
+  z-index: 2;
+  letter-spacing: -2px;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Controls */
+.timer-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn {
+  font-family: var(--font-sans);
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  height: 44px; /* Unified button height */
+  padding: 0 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 14px; /* Modern rounded rectangles instead of thick pill capsules */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition-fast);
+  user-select: none;
+  flex: 1; /* Make side buttons share space */
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  color: #06070a;
+  font-weight: 600;
+  flex: 1.8; /* Make main action button wider */
+  box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--accent-glow);
+  opacity: 0.95;
+}
+
+.btn-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.btn-accent {
+  background-color: var(--accent-color);
+  color: #08090d;
+  height: 46px;
+  border-radius: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.btn-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.btn-lg {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-icon {
+  height: 40px;
+  padding: 0 1.2rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+
+.btn-icon:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Reflection Panel (Always centered)
+   ========================================================================== */
+
+/* Reflection / Break Card Panel (Liquid Glass Center-Bottom Dock) */
+.reflection-card {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translate(-50%, 40px) scale(0.95);
+  width: 520px;
+  opacity: 0;
+  pointer-events: none; /* Ignore clicks when hidden */
+  z-index: 6;
+  padding: 2rem;
+  cursor: grab;
+  user-select: none;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              top 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              left 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              right 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              bottom 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s ease;
+}
+
+.reflection-card.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.reflection-card.dragging {
+  cursor: grabbing !important;
+  box-shadow: 0 35px 70px rgba(0, 0, 0, 0.55);
+}
+
+/* Snapping Corners for Reflection Card */
+.reflection-card.corner-top-left {
+  top: 30px;
+  left: 30px;
+  bottom: auto;
+  right: auto;
+  transform: translate(0, 0) scale(1);
+}
+
+.reflection-card.corner-top-right {
+  top: 30px;
+  right: 30px;
+  bottom: auto;
+  left: auto;
+  transform: translate(0, 0) scale(1);
+}
+
+.reflection-card.corner-bottom-left {
+  bottom: 30px;
+  left: 30px;
+  top: auto;
+  right: auto;
+  transform: translate(0, 0) scale(1);
+}
+
+.reflection-card.corner-bottom-right {
+  bottom: 30px;
+  right: 30px;
+  top: auto;
+  left: auto;
+  transform: translate(0, 0) scale(1);
+}
+
+.reflection-card.corner-center-bottom {
+  bottom: 30px;
+  left: 50%;
+  transform: translate(-50%, 0) scale(1);
+  top: auto;
+  right: auto;
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.4rem;
+}
+
+.panel-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 300;
+  margin-bottom: 1.2rem;
+}
+
+.reflection-input {
+  width: 100%;
+  min-height: 110px;
+  background: rgba(255, 255, 255, 0.04); /* Highly transparent text box matching Liquid Glass */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 300;
+  line-height: 1.5;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  resize: vertical;
+  outline: none;
+  cursor: text; /* Allow normal typing text pointer */
+  transition: var(--transition-fast);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.reflection-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.08), inset 0 1px 4px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.reflection-options {
+  margin-bottom: 1.8rem;
+}
+
+.options-group {
+  display: flex;
+  gap: 2rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  cursor: pointer;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.radio-label input[type="radio"] {
+  display: none;
+}
+
+.custom-radio {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  transition: var(--transition-fast);
+}
+
+.radio-label input[type="radio"]:checked + .custom-radio {
+  border-color: var(--accent-color);
+}
+
+.radio-label input[type="radio"]:checked + .custom-radio::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 4px var(--accent-glow));
+}
+
+/* ==========================================================================
+   Artwork Details Capsule (Bottom-Right)
+   ========================================================================== */
+
+.artwork-details-capsule {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  max-width: 420px;
+  padding: 1rem 1.6rem;
+  z-index: 4;
+  border-radius: var(--border-radius-md);
+  cursor: pointer; /* Indicates it can be clicked for full context */
+  transition: var(--transition-smooth);
+}
+
+.artwork-details-capsule:hover {
+  border-color: rgba(255, 255, 255, 0.42);
+  box-shadow: 
+    0 8px 30px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+  transform: translateY(-2px);
+}
+
+/* Fades and slides slightly down when focus session is running to remain unobtrusive */
+.artwork-details-capsule.active-focus {
+  opacity: 0.15;
+  transform: translateY(5px);
+}
+
+.artwork-details-capsule.active-focus:hover {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.artwork-placeholder-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 300;
+}
+
+.spinner-mini {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: spin 0.8s infinite linear;
+}
+
+.art-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  line-height: 1.3;
+  letter-spacing: 0.3px;
+}
+
+.art-meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 300;
+  letter-spacing: 0.2px;
+}
+
+/* ==========================================================================
+   Gallery Drawer Layout
+   ========================================================================== */
+
+.gallery-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 440px;
+  height: 100vh;
+  z-index: 10;
+  border-radius: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 14, 21, 0.75);
+  backdrop-filter: blur(35px) saturate(170%);
+  -webkit-backdrop-filter: blur(35px) saturate(170%);
+  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery-drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.drawer-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.btn-close:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.drawer-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+/* Gallery Entries */
+.gallery-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--border-radius-md);
+  padding: 1.2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: var(--transition-fast);
+}
+
+.gallery-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.gallery-item-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  background-color: #040508;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.gallery-item-details h4 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  line-height: 1.3;
+}
+
+.gallery-item-details p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
+
+.gallery-item-comment {
+  font-size: 0.9rem;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  border-left: 3px solid var(--accent-color);
+  line-height: 1.4;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.gallery-item-time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: right;
+  margin-top: 0.4rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 250px;
+  text-align: center;
+  color: var(--text-muted);
+  gap: 0.8rem;
+}
+
+.empty-state p {
+  font-size: 1rem;
+}
+
+.empty-state .subtitle {
+  font-size: 0.85rem;
+  max-width: 250px;
+  line-height: 1.4;
+}
+
+/* Custom Scrollbar for Drawer */
+.drawer-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.drawer-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.drawer-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+.drawer-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   Artwork Poetic Hover Insight Bubble
+   ========================================================================== */
+
+.art-context-bubble {
+  position: absolute;
+  bottom: calc(100% + 15px);
+  right: 0;
+  width: 320px;
+  padding: 1.2rem 1.4rem;
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.95);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  cursor: default; /* Regular cursor over text */
+}
+
+/* Open the bubble automatically on hovering over the capsule! */
+.artwork-details-capsule:hover .art-context-bubble {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.bubble-header {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.bubble-text {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 300;
+  line-height: 1.45;
+  color: var(--text-primary);
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
