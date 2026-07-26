@@ -15,41 +15,41 @@ const BREAK_DURATION = IS_DEBUG ? 5 : BREAK_DURATION_DEFAULT;
 
 // Curated list of high-quality Met Open Access painting IDs (Fallback dataset)
 const CURATED_ARTWORKS = [
-  { id: 436535, title: "Wheat Field with Cypresses", artist: "Vincent van Gogh", date: "1889" },
-  { id: 436529, title: "Self-Portrait with a Straw Hat", artist: "Vincent van Gogh", date: "1887" },
-  { id: 436528, title: "Irises", artist: "Vincent van Gogh", date: "1890" },
-  { id: 437133, title: "Water Lilies", artist: "Claude Monet", date: "1919" },
-  { id: 437127, title: "Bridge over a Pond of Water Lilies", artist: "Claude Monet", date: "1899" },
-  { id: 437131, title: "The Parc Monceau", artist: "Claude Monet", date: "1878" },
-  { id: 437397, title: "Aristotle with a Bust of Homer", artist: "Rembrandt van Rijn", date: "1653" },
-  { id: 437396, title: "Self-Portrait", artist: "Rembrandt van Rijn", date: "1660" },
-  { id: 437879, title: "Study of a Young Woman", artist: "Johannes Vermeer", date: "ca. 1665–67" },
-  { id: 437877, title: "Allegory of the Catholic Faith", artist: "Johannes Vermeer", date: "ca. 1670–72" },
-  { id: 437430, title: "By the Seashore", artist: "Auguste Renoir", date: "1883" },
-  { id: 437434, title: "Madame Georges Charpentier and Her Children", artist: "Auguste Renoir", date: "1878" },
-  { id: 436253, title: "View of Toledo", artist: "El Greco", date: "ca. 1599–1600" },
-  { id: 437658, title: "Circus Sideshow (Parade de cirque)", artist: "Georges Seurat", date: "1887–88" },
-  { id: 436819, title: "Mada Primavesi", artist: "Gustav Klimt", date: "1912" },
-  { id: 45434,  title: "Under the Wave off Kanagawa (The Great Wave)", artist: "Katsushika Hokusai", date: "ca. 1830–32" },
-  { id: 435882, title: "The Card Players", artist: "Paul Cézanne", date: "1890–92" },
-  { id: 435883, title: "Still Life with Apples and a Pot of Primroses", artist: "Paul Cézanne", date: "ca. 1890" },
-  { id: 438015, title: "Madame X (Madame Pierre Gautreau)", artist: "John Singer Sargent", date: "1883–84" },
-  { id: 438023, title: "The Wyndham Sisters", artist: "John Singer Sargent", date: "1899" },
-  { id: 436139, title: "The Dance Class", artist: "Edgar Degas", date: "1874" },
-  { id: 436151, title: "Woman in a Tub", artist: "Edgar Degas", date: "1886" },
-  { id: 437508, title: "The Repast of the Lion", artist: "Henri Rousseau", date: "ca. 1907" },
-  { id: 437310, title: "The Boulevard Montmartre on a Winter Morning", artist: "Camille Pissarro", date: "1897" },
-  { id: 435848, title: "The Cup of Tea", artist: "Mary Cassatt", date: "1879" },
-  { id: 436947, title: "Boating", artist: "Édouard Manet", date: "1874" },
-  { id: 437654, title: "The Channel at Gravelines, Evening", artist: "Georges Seurat", date: "1890" },
-  { id: 436252, title: "The Opening of the Fifth Seal", artist: "El Greco", date: "1608–14" },
-  { id: 335805, title: "Studies for the Libyan Sibyl", artist: "Michelangelo Buonarroti", date: "ca. 1510–11" },
-  { id: 341857, title: "Head of a Muse", artist: "Raphael (Raffaello Sanzio)", date: "ca. 1508" },
-  { id: 435826, title: "The Musicians", artist: "Caravaggio (Michelangelo Merisi)", date: "1595" },
-  { id: 435728, title: "Madonna Adoring the Child with Two Angels", artist: "Sandro Botticelli", date: "ca. 1490" },
-  { id: 436838, title: "The Fortune Teller", artist: "Georges de La Tour", date: "ca. 1630" },
-  { id: 437869, title: "Juan de Pareja", artist: "Diego Velázquez", date: "1650" },
-  { id: 10497,  title: "The Oxbow", artist: "Thomas Cole", date: "1836" }
+  { id: 436535, title: "Wheat Field with Cypresses", artist: "Vincent van Gogh", date: "1889", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg" },
+  { id: 436529, title: "Self-Portrait with a Straw Hat", artist: "Vincent van Gogh", date: "1887", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP130961.jpg" },
+  { id: 436528, title: "Irises", artist: "Vincent van Gogh", date: "1890", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-20082-001.jpg" },
+  { id: 437133, title: "Water Lilies", artist: "Claude Monet", date: "1919", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15003-001.jpg" },
+  { id: 437127, title: "Bridge over a Pond of Water Lilies", artist: "Claude Monet", date: "1899", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15001-001.jpg" },
+  { id: 437131, title: "The Parc Monceau", artist: "Claude Monet", date: "1878", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP318843.jpg" },
+  { id: 437397, title: "Aristotle with a Bust of Homer", artist: "Rembrandt van Rijn", date: "1653", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-24151-001.jpg" },
+  { id: 437396, title: "Self-Portrait", artist: "Rembrandt van Rijn", date: "1660", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14350-001.jpg" },
+  { id: 437879, title: "Study of a Young Woman", artist: "Johannes Vermeer", date: "ca. 1665–67", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-1454-001.jpg" },
+  { id: 437877, title: "Allegory of the Catholic Faith", artist: "Johannes Vermeer", date: "ca. 1670–72", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-1451-001.jpg" },
+  { id: 437430, title: "By the Seashore", artist: "Auguste Renoir", date: "1883", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14815-001.jpg" },
+  { id: 437434, title: "Madame Georges Charpentier and Her Children", artist: "Auguste Renoir", date: "1878", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14822-001.jpg" },
+  { id: 436253, title: "View of Toledo", artist: "El Greco", date: "ca. 1599–1600", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-13139-001.jpg" },
+  { id: 437658, title: "Circus Sideshow (Parade de cirque)", artist: "Georges Seurat", date: "1887–88", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-17117-001.jpg" },
+  { id: 436819, title: "Mada Primavesi", artist: "Gustav Klimt", date: "1912", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-12501-001.jpg" },
+  { id: 45434,  title: "Under the Wave off Kanagawa (The Great Wave)", artist: "Katsushika Hokusai", date: "ca. 1830–32", imageUrl: "https://images.metmuseum.org/CRDImages/as/original/DP130155.jpg" },
+  { id: 435882, title: "The Card Players", artist: "Paul Cézanne", date: "1890–92", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP312322.jpg" },
+  { id: 435883, title: "Still Life with Apples and a Pot of Primroses", artist: "Paul Cézanne", date: "ca. 1890", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP312323.jpg" },
+  { id: 438015, title: "Madame X (Madame Pierre Gautreau)", artist: "John Singer Sargent", date: "1883–84", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14286-001.jpg" },
+  { id: 438023, title: "The Wyndham Sisters", artist: "John Singer Sargent", date: "1899", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14289-001.jpg" },
+  { id: 436139, title: "The Dance Class", artist: "Edgar Degas", date: "1874", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP312000.jpg" },
+  { id: 436151, title: "Woman in a Tub", artist: "Edgar Degas", date: "1886", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14979-001.jpg" },
+  { id: 437508, title: "The Repast of the Lion", artist: "Henri Rousseau", date: "ca. 1907", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15822-001.jpg" },
+  { id: 437310, title: "The Boulevard Montmartre on a Winter Morning", artist: "Camille Pissarro", date: "1897", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-14571-001.jpg" },
+  { id: 435848, title: "The Cup of Tea", artist: "Mary Cassatt", date: "1879", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15332-001.jpg" },
+  { id: 436947, title: "Boating", artist: "Édouard Manet", date: "1874", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-16982-001.jpg" },
+  { id: 437654, title: "The Channel at Gravelines, Evening", artist: "Georges Seurat", date: "1890", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-17120-001.jpg" },
+  { id: 436252, title: "The Opening of the Fifth Seal", artist: "El Greco", date: "1608–14", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-13137-001.jpg" },
+  { id: 335805, title: "Studies for the Libyan Sibyl", artist: "Michelangelo Buonarroti", date: "ca. 1510–11", imageUrl: "https://images.metmuseum.org/CRDImages/dp/original/DP375081.jpg" },
+  { id: 341857, title: "Head of a Muse", artist: "Raphael (Raffaello Sanzio)", date: "ca. 1508", imageUrl: "https://images.metmuseum.org/CRDImages/dp/original/DP810777.jpg" },
+  { id: 435826, title: "The Musicians", artist: "Caravaggio (Michelangelo Merisi)", date: "1595", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-13350-001.jpg" },
+  { id: 435728, title: "Madonna Adoring the Child with Two Angels", artist: "Sandro Botticelli", date: "ca. 1490", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-15814-001.jpg" },
+  { id: 436838, title: "The Fortune Teller", artist: "Georges de La Tour", date: "ca. 1630", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-19600-001.jpg" },
+  { id: 437869, title: "Juan de Pareja", artist: "Diego Velázquez", date: "1650", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-20516-001.jpg" },
+  { id: 10497,  title: "The Oxbow", artist: "Thomas Cole", date: "1836", imageUrl: "https://images.metmuseum.org/CRDImages/lh/original/DP-23214-001.jpg" }
 ];
 
 // App State
@@ -107,23 +107,12 @@ function init() {
   setProgress(100);
   loadGallery();
   
-  // Set initial state.currentArt to match the hardcoded instant-load welcome painting
-  state.currentArt = {
-    id: 436535,
-    title: "Wheat Field with Cypresses",
-    artist: "Vincent van Gogh",
-    date: "1889",
-    medium: "Oil on canvas",
-    imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg",
-    culture: "European",
-    dimensions: "28 13/16 × 36 3/4 in. (73.2 × 93.4 cm)",
-    department: "European Paintings",
-    creditLine: "Purchase, The Annenberg Foundation Gift, 1993",
-    objectURL: "https://www.metmuseum.org/art/collection/search/436535"
-  };
+  // Select a random masterpiece locally for instant welcome load on reload!
+  const randomItem = CURATED_ARTWORKS[Math.floor(Math.random() * CURATED_ARTWORKS.length)];
+  state.currentArt = randomItem;
   
-  // Pre-load the next artwork in the background during idle time
-  preloadNextArtCache();
+  // Display it immediately without blocking on network queries
+  displayArtwork(state.currentArt);
 }
 
 function setupEventListeners() {
@@ -208,28 +197,26 @@ async function loadCuratedFallback() {
 function displayArtwork(artObj) {
   state.currentArt = artObj;
   
-  // Set fullscreen background image
-  const imgPreloader = new Image();
-  imgPreloader.onload = () => {
-    fullscreenBgBlur.style.backgroundImage = `url('${artObj.imageUrl}')`;
-    fullscreenBgContain.style.backgroundImage = `url('${artObj.imageUrl}')`;
-    artworkPlaceholderMini.style.display = 'none';
-    artworkDetailsContent.style.display = 'block';
-    
-    artTitle.textContent = artObj.title;
-    artMeta.textContent = `${artObj.artist} (${artObj.date})`;
-    
-    // Only show hover bubble if a specific creative commentary exists
-    const commentary = getCreativeCommentary(artObj);
-    const bubble = document.getElementById('artContextBubble');
-    if (commentary) {
-      document.getElementById('artContextText').textContent = commentary;
-      bubble.style.display = 'block';
-    } else {
-      bubble.style.display = 'none';
-    }
-  };
-  imgPreloader.src = artObj.imageUrl;
+  // Set fullscreen background image instantly (let browser load it progressively!)
+  fullscreenBgBlur.style.backgroundImage = `url('${artObj.imageUrl}')`;
+  fullscreenBgContain.style.backgroundImage = `url('${artObj.imageUrl}')`;
+  
+  // Reveal text details and commentary bubble instantly (0ms delay)
+  artworkPlaceholderMini.style.display = 'none';
+  artworkDetailsContent.style.display = 'block';
+  
+  artTitle.textContent = artObj.title;
+  artMeta.textContent = `${artObj.artist} (${artObj.date})`;
+  
+  // Set poetic hover commentary text instantly from local masterpieces database
+  const commentary = getCreativeCommentary(artObj);
+  const bubble = document.getElementById('artContextBubble');
+  if (commentary) {
+    document.getElementById('artContextText').textContent = commentary;
+    bubble.style.display = 'block';
+  } else {
+    bubble.style.display = 'none';
+  }
   
   preloadNextArtCache();
 }
@@ -286,10 +273,11 @@ async function preloadNextArtCache() {
     const randomItem = CURATED_ARTWORKS[Math.floor(Math.random() * CURATED_ARTWORKS.length)];
     if (state.currentArt && randomItem.id === state.currentArt.id) return;
     
-    const details = await fetchArtworkDetails(randomItem.id);
-    if (details && details.imageUrl) {
-      state.pendingArt = details;
-    }
+    state.pendingArt = randomItem;
+    
+    // Warm up the browser cache by downloading the image in the background during focus session
+    const img = new Image();
+    img.src = randomItem.imageUrl;
   } catch (e) {
     // Ignore cache errors
   }
