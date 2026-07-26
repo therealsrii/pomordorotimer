@@ -724,7 +724,9 @@ function dragStart(e, element) {
 
   // If timerCard is dragged when not active (e.g. on starting page), activate it instantly so it can snap and slide!
   if (element === timerCard && !element.classList.contains('active')) {
+    element.style.transition = 'none';
     element.classList.add('active');
+    element.offsetHeight; // Force instant browser layout reflow
   }
 
   activeDragElement = element;
