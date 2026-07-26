@@ -114,11 +114,11 @@ function init() {
     artist: "Vincent van Gogh",
     date: "1889",
     medium: "Oil on canvas",
-    imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP316773.jpg",
+    imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg",
     culture: "European",
-    dimensions: "29 x 36 3/4 in. (73.7 x 93.3 cm)",
+    dimensions: "28 13/16 × 36 3/4 in. (73.2 × 93.4 cm)",
     department: "European Paintings",
-    creditLine: "Purchase, Metropolitan Museum of Art",
+    creditLine: "Purchase, The Annenberg Foundation Gift, 1993",
     objectURL: "https://www.metmuseum.org/art/collection/search/436535"
   };
   
