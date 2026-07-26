@@ -717,12 +717,14 @@ function setupDragAndDrop() {
 }
 
 function dragStart(e, element) {
-  // Only drag timerCard if active (minimized)
-  if (element === timerCard && !timerCard.classList.contains('active')) return;
-  
   // Ignore drag if clicking inputs, buttons, or options
   if (e.target.closest('.reflection-input') || e.target.closest('.reflection-options') || e.target.closest('.btn') || e.target.closest('button')) {
     return;
+  }
+
+  // If timerCard is dragged when not active (e.g. on starting page), activate it instantly so it can snap and slide!
+  if (element === timerCard && !element.classList.contains('active')) {
+    element.classList.add('active');
   }
 
   activeDragElement = element;
