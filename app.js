@@ -377,7 +377,8 @@ function handleAuthAction() {
 }
 
 /* ==========================================================================
-   
+   Display and Commentary Logic
+   ========================================================================== */
 
 function displayArtwork(artObj) {
   state.currentArt = artObj;
