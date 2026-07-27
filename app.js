@@ -59,7 +59,8 @@ let state = {
   remainingSeconds: FOCUS_DURATION,
   timerInterval: null,
   currentArt: null,
-  pendingArt: null, // Preloaded next art details
+  artworkBuffer: [], // Pre-fetched and cached artwork objects
+  isRefillingBuffer: false, // Mutex flag for refilling buffer
   artChoiceNextSession: 'change', // 'change' or 'keep'
   snappedCorner: 'corner-top-left', // Snapped corner position
   snappedReflectionCorner: 'corner-center-bottom', // Snapped reflection corner position
@@ -118,18 +119,24 @@ async function init() {
   // Set default local seen list
   state.seenArtworkIds = JSON.parse(localStorage.getItem('seenArtworkIds') || '[]');
   
+  // Load pre-fetched artwork buffer from local storage
+  state.artworkBuffer = JSON.parse(localStorage.getItem('artwork_buffer') || '[]');
+  
   // Initialise Firebase Auth & DB (falls back gracefully to LocalStorage mode)
   setupFirebase();
   
-  // Select a random masterpiece locally for instant welcome load on reload!
-  const randomItem = CURATED_ARTWORKS[Math.floor(Math.random() * CURATED_ARTWORKS.length)];
-  state.currentArt = randomItem;
-  
-  // Display it immediately without blocking on network queries
+  // Display first artwork instantly. Check buffer first, then fall back to curated random.
+  if (state.artworkBuffer.length > 0) {
+    state.currentArt = state.artworkBuffer.shift();
+    saveBufferToLocalStorage();
+  } else {
+    state.currentArt = getCuratedFallbackArtwork();
+  }
   displayArtwork(state.currentArt);
   
-  // Load the Met paintings ID pool in the background
+  // Load the Met paintings ID pool and refill buffer in background
   state.artPool = await loadArtPool();
+  refillArtworkBuffer();
 }
 
 function setupEventListeners() {
@@ -148,17 +155,9 @@ function setupEventListeners() {
    ========================================================================== */
 
 async function fetchNextArtwork() {
-  showArtLoading();
-  try {
-    const artObj = await getNextUnseenArtwork();
-    if (artObj) {
-      displayArtwork(artObj);
-    } else {
-      throw new Error("Could not find any unseen artwork details");
-    }
-  } catch (error) {
-    console.warn("Met API error. Loading curated fallback.", error);
-    loadCuratedFallback();
+  const artObj = await popArtworkFromBuffer();
+  if (artObj) {
+    displayArtwork(artObj);
   }
 }
 
@@ -188,16 +187,6 @@ async function fetchArtworkDetails(objectId) {
   } catch {
     return null;
   }
-}
-
-async function loadCuratedFallback() {
-  // Select a random unseen item from local curated list if possible
-  let unseenCurated = CURATED_ARTWORKS.filter(a => !state.seenArtworkIds.includes(a.id));
-  if (unseenCurated.length === 0) {
-    unseenCurated = CURATED_ARTWORKS;
-  }
-  const item = unseenCurated[Math.floor(Math.random() * unseenCurated.length)];
-  displayArtwork(item);
 }
 
 async function loadArtPool() {
@@ -413,8 +402,6 @@ function displayArtwork(artObj) {
   } else {
     bubble.style.display = 'none';
   }
-  
-  preloadNextArtCache();
 }
 
 function getCreativeCommentary(artObj) {
@@ -464,19 +451,64 @@ function getCreativeCommentary(artObj) {
   return commentaryDatabase[id] || "";
 }
 
-async function preloadNextArtCache() {
-  try {
-    const randomItem = CURATED_ARTWORKS[Math.floor(Math.random() * CURATED_ARTWORKS.length)];
-    if (state.currentArt && randomItem.id === state.currentArt.id) return;
-    
-    state.pendingArt = randomItem;
-    
-    // Warm up the browser cache by downloading the image in the background during focus session
+function saveBufferToLocalStorage() {
+  localStorage.setItem('artwork_buffer', JSON.stringify(state.artworkBuffer));
+}
+
+function preloadImage(url) {
+  return new Promise((resolve, reject) => {
     const img = new Image();
-    img.src = randomItem.imageUrl;
-  } catch (e) {
-    // Ignore cache errors
+    img.onload = () => resolve(url);
+    img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+    img.src = url;
+  });
+}
+
+async function refillArtworkBuffer() {
+  if (state.isRefillingBuffer) return;
+  state.isRefillingBuffer = true;
+  
+  try {
+    const maxBufferSize = 3;
+    while (state.artworkBuffer.length < maxBufferSize) {
+      const art = await getNextUnseenArtwork();
+      if (art && art.imageUrl) {
+        try {
+          await preloadImage(art.imageUrl);
+          state.artworkBuffer.push(art);
+          saveBufferToLocalStorage();
+        } catch (e) {
+          console.warn("Failed to preload image for buffer item:", art.title, e);
+        }
+      } else {
+        break; // Either offline or no more artwork
+      }
+    }
+  } catch (error) {
+    console.warn("Error refilling artwork buffer:", error);
+  } finally {
+    state.isRefillingBuffer = false;
   }
+}
+
+function getCuratedFallbackArtwork() {
+  let unseenCurated = CURATED_ARTWORKS.filter(a => !state.seenArtworkIds.includes(a.id));
+  if (unseenCurated.length === 0) {
+    unseenCurated = CURATED_ARTWORKS;
+  }
+  return unseenCurated[Math.floor(Math.random() * unseenCurated.length)];
+}
+
+async function popArtworkFromBuffer() {
+  if (state.artworkBuffer.length > 0) {
+    const art = state.artworkBuffer.shift();
+    saveBufferToLocalStorage();
+    // Asynchronously refill buffer in background
+    refillArtworkBuffer();
+    return art;
+  }
+  refillArtworkBuffer();
+  return getCuratedFallbackArtwork();
 }
 
 function showArtLoading() {
@@ -508,12 +540,7 @@ function startTimer() {
     // Focus on the artwork currently displayed on the screen.
     // If no artwork is set yet (safety fallback), load one.
     if (!state.currentArt) {
-      if (state.pendingArt) {
-        displayArtwork(state.pendingArt);
-        state.pendingArt = null;
-      } else {
-        fetchNextArtwork();
-      }
+      fetchNextArtwork();
     }
   } else if (state.mode === 'paused') {
     state.mode = timerModeBadge.textContent.includes('Break') ? 'break' : 'focus';
@@ -603,13 +630,8 @@ function resetTimer() {
 
 function handleSkip() {
   if (state.mode === 'idle') {
-    // If idle, skipping changes the current artwork to a new random one
-    if (state.pendingArt) {
-      displayArtwork(state.pendingArt);
-      state.pendingArt = null;
-    } else {
-      fetchNextArtwork();
-    }
+    // If idle, skipping changes the current artwork to a new random one from the buffer
+    fetchNextArtwork();
   } else {
     if (confirm("Are you sure you want to skip this session?")) {
       if (state.mode === 'focus') {
@@ -692,12 +714,7 @@ function startNextFocusSession() {
   state.remainingSeconds = FOCUS_DURATION;
   
   if (state.artChoiceNextSession === 'change') {
-    if (state.pendingArt) {
-      displayArtwork(state.pendingArt);
-      state.pendingArt = null;
-    } else {
-      fetchNextArtwork();
-    }
+    fetchNextArtwork();
   } else {
     // Keep artwork. Will re-fade to white when started.
     whiteOverlay.style.opacity = 0;
