@@ -18,9 +18,9 @@ const CURATED_ARTWORKS = [
   { id: 436535, title: "Wheat Field with Cypresses", artist: "Vincent van Gogh", date: "1889", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg" },
   { id: 436529, title: "L'Arl\u00e9sienne: Madame Joseph-Michel Ginoux (Marie Julien, 1848\u20131911)", artist: "Vincent van Gogh", date: "1888\u201389", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT1396.jpg" },
   { id: 436528, title: "Irises", artist: "Vincent van Gogh", date: "1890", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP346474.jpg" },
-  { id: 437133, title: "Garden at Sainte-Adresse", artist: "Claude Monet", date: "1867", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg" },
-  { id: 437127, title: "Bridge over a Pond of Water Lilies", artist: "Claude Monet", date: "1899", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg" },
-  { id: 437131, title: "The Bodmer Oak, Fontainebleau Forest", artist: "Claude Monet", date: "1865", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg" },
+  { id: 437133, title: "Garden at Sainte-Adresse", artist: "Claude Monet", date: "1867", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT48.jpg" },
+  { id: 437127, title: "Bridge over a Pond of Water Lilies", artist: "Claude Monet", date: "1899", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT1854.jpg" },
+  { id: 437131, title: "The Bodmer Oak, Fontainebleau Forest", artist: "Claude Monet", date: "1865", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT1560.jpg" },
   { id: 437397, title: "Self-Portrait", artist: "Rembrandt (Rembrandt van Rijn)", date: "1660", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP-16323-001.jpg" },
   { id: 437396, title: "Hendrickje Stoffels (1626\u20131663)", artist: "Rembrandt (Rembrandt van Rijn)", date: "mid-1650s", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP145920.jpg" },
   { id: 437879, title: "Study of a Young Woman", artist: "Johannes Vermeer", date: "ca. 1665\u201367", imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DP353256.jpg" },
@@ -505,12 +505,15 @@ function startTimer() {
     // Request desktop notification permission on first user click to start focus
     requestNotificationPermission();
     
-    // Instantly change the picture when starting a new focus session!
-    if (state.pendingArt) {
-      displayArtwork(state.pendingArt);
-      state.pendingArt = null;
-    } else {
-      fetchNextArtwork();
+    // Focus on the artwork currently displayed on the screen.
+    // If no artwork is set yet (safety fallback), load one.
+    if (!state.currentArt) {
+      if (state.pendingArt) {
+        displayArtwork(state.pendingArt);
+        state.pendingArt = null;
+      } else {
+        fetchNextArtwork();
+      }
     }
   } else if (state.mode === 'paused') {
     state.mode = timerModeBadge.textContent.includes('Break') ? 'break' : 'focus';
@@ -599,17 +602,27 @@ function resetTimer() {
 }
 
 function handleSkip() {
-  if (confirm("Are you sure you want to skip this session?")) {
-    if (state.mode === 'focus') {
-      clearInterval(state.timerInterval);
-      state.remainingSeconds = 0;
-      handleTimerComplete();
-    } else if (state.mode === 'break') {
-      clearInterval(state.timerInterval);
-      state.remainingSeconds = 0;
-      startNextFocusSession();
+  if (state.mode === 'idle') {
+    // If idle, skipping changes the current artwork to a new random one
+    if (state.pendingArt) {
+      displayArtwork(state.pendingArt);
+      state.pendingArt = null;
     } else {
-      resetTimer();
+      fetchNextArtwork();
+    }
+  } else {
+    if (confirm("Are you sure you want to skip this session?")) {
+      if (state.mode === 'focus') {
+        clearInterval(state.timerInterval);
+        state.remainingSeconds = 0;
+        handleTimerComplete();
+      } else if (state.mode === 'break') {
+        clearInterval(state.timerInterval);
+        state.remainingSeconds = 0;
+        startNextFocusSession();
+      } else {
+        resetTimer();
+      }
     }
   }
 }

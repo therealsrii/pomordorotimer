@@ -14,8 +14,8 @@
 <body>
 
   <!-- Fullscreen Artwork Background -->
-  <div class="fullscreen-bg-blur" id="fullscreenBgBlur" style="background-image: url('https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg');"></div>
-  <div class="fullscreen-bg-contain" id="fullscreenBgContain" style="background-image: url('https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg');"></div>
+  <div class="fullscreen-bg-blur" id="fullscreenBgBlur"></div>
+  <div class="fullscreen-bg-contain" id="fullscreenBgContain"></div>
   
   <!-- Dynamic overlays for the transition effects -->
   <div class="white-reveal-overlay" id="whiteOverlay"></div>
@@ -89,19 +89,19 @@
 
     <!-- Artwork Details Caption (Bottom-Right corner) -->
     <div class="artwork-details-capsule glass-panel" id="artworkDetailsCapsule">
-      <div class="artwork-placeholder-mini" id="artworkPlaceholderMini" style="display: none;">
+      <div class="artwork-placeholder-mini" id="artworkPlaceholderMini" style="display: flex;">
         <div class="spinner-mini"></div>
         <span>Curating Met Gallery...</span>
       </div>
-      <div class="artwork-details-content" id="artworkDetailsContent" style="display: block;">
-        <h2 class="art-title" id="artTitle">Wheat Field with Cypresses</h2>
-        <p class="art-meta" id="artMeta">Vincent van Gogh (1889)</p>
+      <div class="artwork-details-content" id="artworkDetailsContent" style="display: none;">
+        <h2 class="art-title" id="artTitle"></h2>
+        <p class="art-meta" id="artMeta"></p>
       </div>
       
       <!-- Poetic Hover Insight Bubble -->
-      <div class="art-context-bubble glass-panel" id="artContextBubble" style="display: block;">
+      <div class="art-context-bubble glass-panel" id="artContextBubble" style="display: none;">
         <div class="bubble-header">Creative Commentary</div>
-        <p class="bubble-text" id="artContextText">Painted from his asylum window in Saint-Rémy, Van Gogh saw this wind-swept landscape as a symbol of life's eternal cycles. His heavy, spiraling brushwork makes the wheat feel like a golden sea and the cypresses like dark green flames reaching for the sky.</p>
+        <p class="bubble-text" id="artContextText"></p>
       </div>
     </div>
 
